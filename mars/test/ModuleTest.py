@@ -5,5 +5,5 @@ class ModuleTest():
     def __init__(self):
         self.desc = 'ModuleTest'
 
-    def printDesc(self):
+    def print_desc(self):
         print(self.desc)

@@ -6,23 +6,23 @@ class BuiltInDataTypes:
   def __init__(self, variable=None):
     self.variable = variable
 
-  def getVariable(self):
+  def get_variable(self):
     return self.variable
 
   @classmethod
-  def classMethod(cls):
+  def class_method(cls):
     # pass  # A class method
     print("A class method")
 
   
   @staticmethod
-  def getType(variable):
+  def get_type(variable):
     return type(variable)
 
   @staticmethod
-  def showAllBuiltInTypes():
+  def show_all_built_in_types():
     print("\nBuilt-in Data Types\n\nPython has the following data types built-in by default, in these categories:")
-    builtInDataTypes = """
+    built_in_data_types = """
       Text Type:      str
       Numeric Types:  int, float, complex
       Sequence Types: list, tuple, range
@@ -33,8 +33,8 @@ class BuiltInDataTypes:
       None Type:      NoneType
     """
 
-    print(builtInDataTypes + "\n")
+    print(built_in_data_types + "\n")
 
 
 if __name__ == "__main__":
-  BuiltInDataTypes.showAllBuiltInTypes()
+  BuiltInDataTypes.show_all_built_in_types()
