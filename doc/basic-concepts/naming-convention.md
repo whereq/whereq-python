@@ -1,5 +1,4 @@
 # Python Naming Conventions
-=========================
 
 ## 1. General
 

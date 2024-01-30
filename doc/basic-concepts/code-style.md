@@ -1,5 +1,4 @@
 Python Coding Style Conventions
-===============================
 
 # 1. Whitespace
 ----------------
