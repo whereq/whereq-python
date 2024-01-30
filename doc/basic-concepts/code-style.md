@@ -1,7 +1,6 @@
-Python Coding Style Conventions
+# Python Coding Style Conventions
 
 # 1. Whitespace
-----------------
 
 ## 1.1. Indentation
 
@@ -22,7 +21,7 @@ Python Coding Style Conventions
 * In all other cases, extraneous spaces are frowned upon
 
 # 2. Imports
-----------------
+
 
 * Imports should occur at the top of the module, after any module docstring
 * Standard imports (those beginning with "import") should each be on a separate line. Do not combine imports into one line.
@@ -30,14 +29,14 @@ Python Coding Style Conventions
 * Wildcard imports should only be used when absolutely necessary, otherwise only import the modules to be used
 
 # 3. Code Blocks
-----------------
+
 
 * Do not use parenthesis in the condition for a code block header unless it would be otherwise appropriate to use parenthesis around that condition
 * Do not use any single line code blocks. Even those with a single statement in the body should occupy multiple lines
 
 
 # 4. Comments
-----------------
+
 
 * First and foremost, comments should be up to date and accurate. When updating code, always make sure to update any comments that refer to it
 * Comments should be wrapped to 72 characters
@@ -46,8 +45,7 @@ Python Coding Style Conventions
 * Clever humor is acceptable on occasion
 * Do not merely summarize the code that follows. State its overall purpose, justify its inclusion, or explain quirks that other programmers may need to know
 
-4.1. Docstring Comments
------------------------
+## 4.1. Docstring Comments
 
 * Docstring comments should consist of a short summary line, optionally (but usually) followed by a blank line, then additional paragraphs with further explanation
 * All classes and methods should contain a docstring
