@@ -30,6 +30,6 @@ List of covered sections:
 
 # References
 * [Guido’s Python Style Guide](https://www.python.org/doc/essays/styleguide/)
-* [Python Naming Convention] (https://namingconvention.org/)
+* [Python Naming Convention](https://namingconvention.org/)
 * [PEP 8 – Style Guide for Python Code](https://peps.python.org/pep-0008/)
 * [How to Write Beautiful Python Code With PEP 8](https://realpython.com/python-pep8/)
