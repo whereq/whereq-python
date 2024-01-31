@@ -56,7 +56,7 @@ Assuming  `mod.py`  is in an appropriate location, which you will learn more abo
 ```python 
 >>> import src.example.module.mod
 >>> print(src.example.module.mod.msg)
-Hello WhereQ!
+Hello Mars!.
 >>> src.example.module.mod.int_array
 [100, 200, 300]
 >>> src.example.module.mod.foo(['apple', 'orange', 'pear'])
@@ -140,23 +140,23 @@ After the following  `import`  statement,  `mod`  is placed into the local symbo
 ```python
 >>> import mod
 >>> mod
-<module 'mod' from 'C:\\Users\\john\\Documents\\Python\\doc\\mod.py'>
+<module 'src.example.module.mod' from '[absolute_path]\\...\\whereq-python\\code\\mars\\src\\example\\module\\mod.py'>
 ```
 
 But `s` and `foo` remain in the module’s private symbol table and are not meaningful in the local context:
 ```python
->>> s
+>>> msg
 NameError: name 's' is not defined
->>> foo('quux')
+>>> foo('apple')
 NameError: name 'foo' is not defined
 ```
 
-To be accessed in the local context, names of objects defined in the module must be prefixed by `mod`:
+To be accessed in the local context, names of objects defined in the module must be prefixed by `src.example.module.mod`:
 ```python
->>> mod.s
-'If Comrade Napoleon says it, it must be right.'
->>> mod.foo('quux')
-arg = quux
+>>> src.example.module.mod.msg
+'Hello Mars!.'
+>>> src.example.module.mod.foo('apple')
+arg = apple
 ```
 
 Several comma-separated modules may be specified in a single import statement:
@@ -174,13 +174,13 @@ from <module_name> import <name(s)>
 Following execution of the above statement, `<name(s)>` can be referenced in the caller’s environment without the `<module_name>` prefix:
 
 ```python
->>> from mod import s, foo
->>> s
-'If Comrade Napoleon says it, it must be right.'
->>> foo('quux')
-arg = quux
+>>> from src.example.module.mod import msg, foo
+>>> src.example.module.mod.msg
+'Hello Mars!.'
+>>> src.example.module.mod.foo('apple')
+arg = apple
 
->>> from mod import Foo
+>>> from src.example.module.mod import Foo
 >>> x = Foo()
 >>> x
 <mod.Foo object at 0x02E3AD50>
