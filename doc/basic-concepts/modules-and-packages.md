@@ -54,25 +54,25 @@ Several objects are defined in  `mod.py`:
 Assuming  `mod.py`  is in an appropriate location, which you will learn more about shortly, these objects can be accessed by  **importing**  the module as follows:
 
 ```python 
->>> import mod
->>> print(mod.msg)
-Hello Mars!.
->>> mod.int_array
+>>> import src.example.module.mod
+>>> print(src.example.module.mod.msg)
+Hello WhereQ!
+>>> src.example.module.mod.int_array
 [100, 200, 300]
->>> mod.foo(['apple', 'orange', 'pear'])
+>>> src.example.module.mod.foo(['apple', 'orange', 'pear'])
 arg = ['apple', 'orange', 'pear']
->>> x = mod.Foo()
+>>> x = src.example.module.mod.Foo()
 >>> x
-<mod.Foo object at 0x03C181F0>
+<src.example.module.mod.Foo object at 0x0000021D3C97CA10>
 ```
 
 ## The Module Search Path
 Continuing with the above example, let’s take a look at what happens when Python executes the statement:
 ```python
-import mod
+import src.example.module.mod
 ```
 
-When the interpreter executes the above  `import`  statement, it searches for  `mod.py`  in a  [list](https://realpython.com/python-lists-tuples/)  of directories assembled from the following sources:
+When the interpreter executes the above  `import`  statement, it searches for  `src.example.module.mod.py`  in a  [list](https://realpython.com/python-lists-tuples/)  of directories assembled from the following sources:
 
 -   The directory from which the input script was run or the  **current directory**  if the interpreter is being run interactively
 -   The list of directories contained in the  [`PYTHONPATH`](https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH)  environment variable, if it is set. (The format for  `PYTHONPATH`  is OS-dependent but should mimic the  [`PATH`](https://realpython.com/add-python-to-path/)  environment variable.)
@@ -82,11 +82,8 @@ The resulting search path is accessible in the Python variable  `sys.path`, whic
 ```python
 >>> import sys
 >>> sys.path
-['', 'C:\\Users\\john\\Documents\\Python\\doc', 'C:\\Python36\\Lib\\idlelib',
-'C:\\Python36\\python36.zip', 'C:\\Python36\\DLLs', 'C:\\Python36\\lib',
-'C:\\Python36', 'C:\\Python36\\lib\\site-packages']
+['', '[absolute_path]\\Python-3.12.1\\python312.zip', '[absolute_path]\\Python-3.12.1\\DLLs', '[absolute_path]\\Python-3.12.1\\Lib', '[absolute_path]\\Python-3.12.1', '[absolute_path]\\Python-3.12.1\\Lib\\site-packages']
 ```
-
 
 **Note:**  The exact contents of  `sys.path`  are installation-dependent. The above will almost certainly look slightly different on your computer.
 
@@ -100,11 +97,9 @@ Thus, to ensure your module is found, you need to do one of the following:
 There is actually one additional option: you can put the module file in any directory of your choice and then modify  `sys.path`  at run-time so that it contains that directory. For example, in this case, you could put  `mod.py`  in directory  `C:\Users\john`  and then issue the following statements:
 
 ```python
->>> sys.path.append(r'C:\Users\john')
+>>> sys.path.append(r'C:\Users\googo\whereq\git\whereq-python\ext_path')
 >>> sys.path
-['', 'C:\\Users\\john\\Documents\\Python\\doc', 'C:\\Python36\\Lib\\idlelib',
-'C:\\Python36\\python36.zip', 'C:\\Python36\\DLLs', 'C:\\Python36\\lib',
-'C:\\Python36', 'C:\\Python36\\lib\\site-packages', 'C:\\Users\\john']
+['', '[absolute_path]\\Python-3.12.1\\python312.zip', '[absolute_path]\\Python-3.12.1\\DLLs', '[absolute_path]\\Python-3.12.1\\Lib', '[absolute_path]\\Python-3.12.1', '[absolute_path]\\Python-3.12.1\\Lib\\site-packages', '[absolute_path]\\...\\whereq-python\\ext_path']
 >>> import mod
 ```
 
@@ -113,11 +108,11 @@ Once a module has been imported, you can determine the location where it was fou
 ```python
 >>> import mod
 >>> mod.__file__
-'C:\\Users\\john\\mod.py'
+'[absolute_path]\\...\\whereq-python\\ext_path\\mod.py'
 
 >>> import re
 >>> re.__file__
-'C:\\Python36\\lib\\re.py'
+'[absolute_path]\\Python-3.12.1\\Lib\\re\\__init__.py'
 ```
 
 The directory portion of `__file__` should be one of the directories in `sys.path`.
