@@ -33,7 +33,7 @@ Here, the focus will mostly be on modules that are written in Python. The cool t
 For example, suppose you have created a file called **mod.py** containing the following:
 
 ```python
-msg = "Hello Mars!."
+msg = 'Hello Mars!'
 int_array = [100, 200, 300]
 
 def foo(arg):
