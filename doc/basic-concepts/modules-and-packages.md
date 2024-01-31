@@ -8,14 +8,14 @@
 	* [from <module_name> import <name(s)>](#from-module_name-import-names)
 	* [from <module_name> import <name> as <alt_name>](#from-module_name-import-name-as-alt_name)
 	* [import <module_name> as <alt_name>](#import-module_name-as-alt_name)
-* The dir() Function
-* Executing a Module as a Script
-* Reloading a Module
-* Python Packages
-* Package Initialization
-* Importing * From a Package
-* Subpackages
-* Conclusion
+* [The dir() Function](#the-dir-function)
+* [Executing a Module as a Script](#executing-a-module-as-a-script)
+* [Reloading a Module](#reloading-a-module)
+* [Python Packages](#python-packages)
+* [Package Initialization](#package-initialization)
+* [Importing * From a Package](#importing-from-a-package)
+* [Subpackages](#subpackages)
+* [Conclusion](#conclusion)
 
 
 ## Python Modules: Overview
@@ -225,7 +225,7 @@ This will place the names of _all_ objects from `<module_name>` into the local s
 
 This isn’t necessarily recommended in large-scale production code. It’s a bit dangerous because you are entering names into the local symbol table _en masse_. Unless you know them all well and can be confident there won’t be a conflict, you have a decent chance of overwriting an existing name inadvertently. However, this syntax is quite handy when you are just mucking around with the interactive interpreter, for testing or discovery purposes, because it quickly gives you access to everything a module has to offer without a lot of typing.
 
-### from <module_name> import <name> as <alt_name>
+### from <module_name> import \<name\> as <alt_name>
 It is also possible to `import` individual objects but enter them into the local symbol table with alternate names:
 
 ```python
@@ -302,5 +302,728 @@ Module not found
 
 Object not found in module
 ```
+
+## The dir() Function
+The built-in function `dir()` returns a list of defined names in a namespace. Without arguments, it produces an alphabetically sorted list of names in the current **local symbol table**:
+```python
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> qux = [1, 2, 3, 4, 5]
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'qux']
+
+>>> class Bar():
+...     pass
+...
+>>> x = Bar()
+>>> dir()
+['Bar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'qux', 'x']
+```
+
+Note how the first call to  `dir()`  above lists several names that are automatically defined and already in the namespace when the interpreter starts. As new names are defined (`qux`,  `Bar`,  `x`), they appear on subsequent invocations of  `dir()`.
+
+This can be useful for identifying what exactly has been added to the namespace by an import statement:
+```python
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> import mod
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'mod']
+>>> mod.s
+'If Comrade Napoleon says it, it must be right.'
+>>> mod.foo([1, 2, 3])
+arg = [1, 2, 3]
+
+>>> from mod import a, Foo
+>>> dir()
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'a', 'mod']
+>>> a
+[100, 200, 300]
+>>> x = Foo()
+>>> x
+<mod.Foo object at 0x002EAD50>
+
+>>> from mod import s as string
+>>> dir()
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'a', 'mod', 'string', 'x']
+>>> string
+'If Comrade Napoleon says it, it must be right.'
+```
+
+When given an argument that is the name of a module, `dir()` lists the names defined in the module:
+```python
+>>> import mod
+>>> dir(mod)
+['Foo', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
+'__name__', '__package__', '__spec__', 'a', 'foo', 's']
+```
+
+```python
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+>>> from mod import *
+>>> dir()
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'a', 'foo', 's']
+```
+
+
+## Executing a Module as a Script
+Any  `.py`  file that contains a  **module**  is essentially also a Python  **script**, and there isn’t any reason it can’t be executed like one.
+
+Here again is  `mod.py`  as it was defined above:
+
+**_mod.py_**
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+```
+
+This can be run as a script:
+```
+C:\Users\john\Documents>python mod.py
+C:\Users\john\Documents>
+```
+
+
+There are no errors, so it apparently worked. Granted, it’s not very interesting. As it is written, it only  _defines_  objects. It doesn’t  _do_  anything with them, and it doesn’t generate any output.
+
+Let’s modify the above Python module so it does generate some output when run as a script:
+
+
+**_mod.py_**
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+
+print(s)
+print(a)
+foo('quux')
+x = Foo()
+print(x)
+```
+
+Now it should be a little more interesting:
+```
+C:\Users\john\Documents>python mod.py
+If Comrade Napoleon says it, it must be right.
+[100, 200, 300]
+arg = quux
+<__main__.Foo object at 0x02F101D0>
+```
+Unfortunately, now it also generates output when imported as a module:
+```python
+>>> import mod
+If Comrade Napoleon says it, it must be right.
+[100, 200, 300]
+arg = quux
+<mod.Foo object at 0x0169AD50>
+```
+This is probably not what you want. It isn’t usual for a module to generate output when it is imported.
+
+Wouldn’t it be nice if you could distinguish between when the file is loaded as a module and when it is run as a standalone script?
+
+Ask and ye shall receive.
+
+When a  `.py`  file is imported as a module, Python sets the special  **dunder**  variable  [`__name__`](https://realpython.com/python-main-function/)  to the name of the module. However, if a file is run as a standalone script,  `__name__`  is (creatively) set to the string  `'__main__'`. Using this fact, you can discern which is the case at run-time and alter behavior accordingly:
+
+**_mod.py_**
+
+```python
+s = "If Comrade Napoleon says it, it must be right."
+a = [100, 200, 300]
+
+def foo(arg):
+    print(f'arg = {arg}')
+
+class Foo:
+    pass
+
+if (__name__ == '__main__'):
+    print('Executing as standalone script')
+    print(s)
+    print(a)
+    foo('quux')
+    x = Foo()
+    print(x)
+```
+Now, if you run as a script, you get output:
+```
+C:\Users\john\Documents>python mod.py
+Executing as standalone script
+If Comrade Napoleon says it, it must be right.
+[100, 200, 300]
+arg = quux
+<__main__.Foo object at 0x03450690>
+```
+But if you import as a module, you don’t:
+```python 
+>>> import mod
+>>> mod.foo('grault')
+arg = grault
+```
+
+Modules are often designed with the capability to run as a standalone script for purposes of testing the functionality that is contained within the module. This is referred to as  **[unit testing](https://realpython.com/python-testing/).**  For example, suppose you have created a module  `fact.py`  containing a  **factorial**  function, as follows:
+
+**_fact.py_**
+```python 
+def fact(n):
+    return 1 if n == 1 else n * fact(n-1)
+
+if (__name__ == '__main__'):
+    import sys
+    if len(sys.argv) > 1:
+        print(fact(int(sys.argv[1])))
+```
+
+The file can be treated as a module, and the fact() function imported:
+
+```python 
+>>> from fact import fact
+>>> fact(6)
+720
+```
+But it can also be run as a standalone by passing an integer argument on the command-line for testing:
+```
+C:\Users\john\Documents>python fact.py 6
+720
+```
+
+## Reloading a Module
+
+For reasons of efficiency, a module is only loaded once per interpreter session. That is fine for function and class definitions, which typically make up the bulk of a module’s contents. But a module can contain executable statements as well, usually for initialization. Be aware that these statements will only be executed the  _first time_  a module is imported.
+
+Consider the following file  `mod.py`:
+
+**_mod.py_**
+```python 
+a = [100, 200, 300]
+print('a =', a)
+```
+```python 
+>>> import mod
+a = [100, 200, 300]
+>>> import mod
+>>> import mod
+
+>>> mod.a
+[100, 200, 300]
+```
+
+The  `print()`  statement is not executed on subsequent imports. (For that matter, neither is the assignment statement, but as the final display of the value of  `mod.a`  shows, that doesn’t matter. Once the assignment is made, it sticks.)
+
+If you make a change to a module and need to reload it, you need to either restart the interpreter or use a function called  `reload()`  from module  `importlib`:
+
+```python 
+>>> import mod
+a = [100, 200, 300]
+
+>>> import mod
+
+>>> import importlib
+>>> importlib.reload(mod)
+a = [100, 200, 300]
+<module 'mod' from 'C:\\Users\\john\\Documents\\Python\\doc\\mod.py'>
+```
+
+## Python Packages
+
+Suppose you have developed a very large application that includes many modules. As the number of modules grows, it becomes difficult to keep track of them all if they are dumped into one location. This is particularly so if they have similar names or functionality. You might wish for a means of grouping and organizing them.
+
+**Packages**  allow for a hierarchical structuring of the module namespace using  **dot notation**. In the same way that  **modules**  help avoid collisions between global variable names,  **packages**  help avoid collisions between module names.
+
+Creating a  **package**  is quite straightforward, since it makes use of the operating system’s inherent hierarchical file structure. Consider the following arrangement:
+
+```
+pkg
+  |- mod1.py
+  |- mod2.py
+```
+
+Here, there is a directory named `pkg` that contains two modules, `mod1.py` and `mod2.py`. The contents of the modules are:
+
+**_mod1.py_**
+```python 
+def foo():
+    print('[mod1] foo()')
+
+class Foo:
+    pass
+```
+
+**_mod2.py_**
+```python 
+def bar():
+    print('[mod2] bar()')
+
+class Bar:
+    pass
+```
+
+Given this structure, if the `pkg` directory resides in a location where it can be found (in one of the directories contained in `sys.path`), you can refer to the two **modules** with **dot notation** (`pkg.mod1`, `pkg.mod2`) and import them with the syntax you are already familiar with:
+
+```python 
+import <module_name>[, <module_name> ...]
+```
+
+```python 
+>>> import pkg.mod1, pkg.mod2
+>>> pkg.mod1.foo()
+[mod1] foo()
+>>> x = pkg.mod2.Bar()
+>>> x
+<pkg.mod2.Bar object at 0x033F7290>
+```
+
+```python 
+from <module_name> import <name(s)>
+```
+
+```python 
+>>> from pkg.mod1 import foo
+>>> foo()
+[mod1] foo()
+```
+```python 
+from <module_name> import <name> as <alt_name>
+```
+
+```python 
+>>> from pkg.mod2 import Bar as Qux
+>>> x = Qux()
+>>> x
+<pkg.mod2.Bar object at 0x036DFFD0>
+```
+
+You can import modules with these statements as well:
+```python 
+from <package_name> import <modules_name>[, <module_name> ...]
+from <package_name> import <module_name> as <alt_name>
+```
+
+```python 
+>>> from pkg import mod1
+>>> mod1.foo()
+[mod1] foo()
+```
+
+```python 
+>>> from pkg import mod2 as quux
+>>> quux.bar()
+[mod2] bar()
+```
+
+You can technically import the package as well:
+```python 
+>>> import pkg
+>>> pkg
+<module 'pkg' (namespace)>
+```
+
+But this is of little avail. Though this is, strictly speaking, a syntactically correct Python statement, it doesn’t do much of anything useful. In particular, it _does not place_ any of the modules in `pkg` into the local namespace:
+
+```python 
+>>> pkg.mod1
+Traceback (most recent call last):
+  File "<pyshell#34>", line 1, in <module>
+    pkg.mod1
+AttributeError: module 'pkg' has no attribute 'mod1'
+>>> pkg.mod1.foo()
+Traceback (most recent call last):
+  File "<pyshell#35>", line 1, in <module>
+    pkg.mod1.foo()
+AttributeError: module 'pkg' has no attribute 'mod1'
+>>> pkg.mod2.Bar()
+Traceback (most recent call last):
+  File "<pyshell#36>", line 1, in <module>
+    pkg.mod2.Bar()
+AttributeError: module 'pkg' has no attribute 'mod2'
+```
+To actually import the modules or their contents, you need to use one of the forms shown above.
+
+
+## Package Initialization
+If a file named  `__init__.py`  is present in a package directory, it is invoked when the package or a module in the package is imported. This can be used for execution of package initialization code, such as initialization of package-level data.
+
+For example, consider the following  `__init__.py`  file:
+
+_**__init__.py**_
+
+```python 
+print(f'Invoking __init__.py for {__name__}')
+A = ['quux', 'corge', 'grault']
+```
+
+
+Let’s add this file to the `pkg` directory from the above example:
+
+```
+pkg
+  |- __init__.py
+  |- mod1.py
+  |- mod2.py
+```
+
+Now when the package is imported, the global list A is initialized:
+
+```python 
+>>> import pkg
+Invoking __init__.py for pkg
+>>> pkg.A
+['quux', 'corge', 'grault']
+```
+
+A  **module**  in the package can access the global variable by importing it in turn:
+
+**_mod1.py_**
+
+```python
+def foo():
+    from pkg import A
+    print('[mod1] foo() / A = ', A)
+
+class Foo:
+    pass
+```	
+	
+```python	
+>>> from pkg import mod1
+Invoking __init__.py for pkg
+>>> mod1.foo()
+[mod1] foo() / A =  ['quux', 'corge', 'grault']
+```
+
+
+
+`__init__.py`  can also be used to effect automatic importing of modules from a package. For example, earlier you saw that the statement  `import pkg`  only places the name  `pkg`  in the caller’s local symbol table and doesn’t import any modules. But if  `__init__.py`  in the  `pkg`  directory contains the following:
+
+_**__init__.py**_
+
+```python 
+print(f'Invoking __init__.py for {__name__}')
+import pkg.mod1, pkg.mod2
+```
+then when you execute import pkg, modules mod1 and mod2 are imported automatically:
+
+```python 
+>>> import pkg
+Invoking __init__.py for pkg
+>>> pkg.mod1.foo()
+[mod1] foo()
+>>> pkg.mod2.bar()
+[mod2] bar()
+```
+
+
+**Note:**  Much of the Python documentation states that an  `__init__.py`  file  **must**  be present in the package directory when creating a package. This was once true. It used to be that the very presence of  `__init__.py`  signified to Python that a package was being defined. The file could contain initialization code or even be empty, but it  **had**  to be present.
+
+Starting with  **Python 3.3**,  [Implicit Namespace Packages](https://www.python.org/dev/peps/pep-0420)  were introduced. These allow for the creation of a package without any  `__init__.py`  file. Of course, it  **can**  still be present if package initialization is needed. But it is no longer required. Check out  [What’s a Python Namespace Package, and What’s It For?](https://realpython.com/python-namespace-package/)  to learn more.
+
+## Importing * From a Package
+
+For the purposes of the following discussion, the previously defined package is expanded to contain some additional modules:
+```
+pkg
+  |- mod1.py
+  |- mod2.py
+  |- mod3.py
+  |- mod4.py
+```
+There are now four modules defined in the  `pkg`  directory. Their contents are as shown below:
+
+_**mod1.py**_
+```python 
+def foo():
+    print('[mod1] foo()')
+
+class Foo:
+    pass
+```
+
+
+_**mod2.py**_
+```python 
+def bar():
+    print('[mod2] bar()')
+
+class Bar:
+    pass
+```
+
+
+
+_**mod3.py**_
+```python 
+def baz():
+    print('[mod3] baz()')
+
+class Baz:
+    pass
+```
+
+
+
+_**mod4.py**_
+```python 
+def qux():
+    print('[mod4] qux()')
+
+class Qux:
+    pass
+```
+
+(Imaginative, aren’t they?)
+
+You have already seen that when  `import *`  is used for a  **module**,  _all_  objects from the module are imported into the local symbol table, except those whose names begin with an underscore, as always:
+
+
+```python 
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> from pkg.mod3 import *
+
+>>> dir()
+['Baz', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'baz']
+>>> baz()
+[mod3] baz()
+>>> Baz
+<class 'pkg.mod3.Baz'>
+```
+
+
+The analogous statement for a **package** is this:
+
+```python 
+from <package_name> import *
+```
+
+What does that do?
+```python 
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> from pkg import *
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+```
+
+Hmph. Not much. You might have expected (assuming you had any expectations at all) that Python would dive down into the package directory, find all the modules it could, and import them all. But as you can see, by default that is not what happens.
+
+Instead, Python follows this convention: if the  `__init__.py`  file in the  **package**  directory contains a  **list**  named  `__all__`, it is taken to be a list of modules that should be imported when the statement  `from <package_name> import *`  is encountered.
+
+For the present example, suppose you create an  `__init__.py`  in the  `pkg`  directory like this:
+
+_**pkg/__init__.py**_
+
+```python 
+__all__ = [
+        'mod1',
+        'mod2',
+        'mod3',
+        'mod4'
+        ]
+```
+
+
+
+Now `from pkg import *` imports all four modules:
+
+```python 
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> from pkg import *
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'mod1', 'mod2', 'mod3', 'mod4']
+>>> mod2.bar()
+[mod2] bar()
+>>> mod4.Qux
+<class 'pkg.mod4.Qux'>
+```
+
+Using  `import *`  still isn’t considered terrific form, any more for  **packages**  than for  **modules**. But this facility at least gives the creator of the package some control over what happens when  `import *`  is specified. (In fact, it provides the capability to disallow it entirely, simply by declining to define  `__all__`  at all. As you have seen, the default behavior for packages is to import nothing.)
+
+By the way,  `__all__`  can be defined in a  **module**  as well and serves the same purpose: to control what is imported with  `import *`. For example, modify  `mod1.py`  as follows:
+
+_**pkg/mod1.py**_
+
+```python 
+__all__ = ['foo']
+
+def foo():
+    print('[mod1] foo()')
+
+class Foo:
+    pass
+```
+
+
+Now an `import *` statement from `pkg.mod1` will only import what is contained in `__all__`:
+
+```python 
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__']
+
+>>> from pkg.mod1 import *
+>>> dir()
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
+'__package__', '__spec__', 'foo']
+
+>>> foo()
+[mod1] foo()
+>>> Foo
+Traceback (most recent call last):
+  File "<pyshell#37>", line 1, in <module>
+    Foo
+NameError: name 'Foo' is not defined
+```
+
+`foo()`  (the function) is now defined in the local namespace, but  `Foo`  (the class) is not, because the latter is not in  `__all__`.
+
+In summary,  `__all__`  is used by both  **packages**  and  **modules**  to control what is imported when  `import *`  is specified. But  _the default behavior differs_:
+
+-   For a package, when  `__all__`  is not defined,  `import *`  does not import anything.
+-   For a module, when  `__all__`  is not defined,  `import *`  imports everything (except—you guessed it—names starting with an underscore).
+
+
+## Subpackages
+
+Packages can contain nested **subpackages** to arbitrary depth. For example, let’s make one more modification to the example **package** directory as follows:
+
+```
+pkg
+  |- sub_pkg1
+     |- mod1.py
+	 |- mod2.py
+  |- sub_pkg2
+     |- mod3.py
+	 |- mod4.py 
+```
+The four modules (`mod1.py`,  `mod2.py`,  `mod3.py`  and  `mod4.py`) are defined as previously. But now, instead of being lumped together into the  `pkg`  directory, they are split out into two  **subpackage**  directories,  `sub_pkg1`  and  `sub_pkg2`.
+
+Importing still works the same as shown previously. Syntax is similar, but additional  **dot notation**  is used to separate  **package**  name from  **subpackage**  name:
+
+```python 
+>>> import pkg.sub_pkg1.mod1
+>>> pkg.sub_pkg1.mod1.foo()
+[mod1] foo()
+
+>>> from pkg.sub_pkg1 import mod2
+>>> mod2.bar()
+[mod2] bar()
+
+>>> from pkg.sub_pkg2.mod3 import baz
+>>> baz()
+[mod3] baz()
+
+>>> from pkg.sub_pkg2.mod4 import qux as grault
+>>> grault()
+[mod4] qux()
+```
+
+
+In addition, a module in one  **subpackage**  can reference objects in a  **sibling subpackage**  (in the event that the sibling contains some functionality that you need). For example, suppose you want to import and execute function  `foo()`  (defined in module  `mod1`) from within module  `mod3`. You can either use an  **absolute import**:
+
+_**pkg/sub__pkg2/mod3.py**_
+
+```python
+def baz():
+    print('[mod3] baz()')
+
+class Baz:
+    pass
+
+from pkg.sub_pkg1.mod1 import foo
+foo()
+```
+
+```python
+>>> from pkg.sub_pkg2 import mod3
+[mod1] foo()
+>>> mod3.foo()
+[mod1] foo()
+```
+
+
+Or you can use a  **relative import**, where  `..`  refers to the package one level up. From within  `mod3.py`, which is in subpackage  `sub_pkg2`,
+
+-   `..`  evaluates to the parent package (`pkg`), and
+-   `..sub_pkg1`  evaluates to subpackage  `sub_pkg1`  of the parent package.
+
+_**pkg/sub__pkg2/mod3.py**_
+
+```python
+def baz():
+    print('[mod3] baz()')
+
+class Baz:
+    pass
+
+from .. import sub_pkg1
+print(sub_pkg1)
+
+from ..sub_pkg1.mod1 import foo
+foo()
+```
+
+```python
+>>> from pkg.sub_pkg2 import mod3
+<module 'pkg.sub_pkg1' (namespace)>
+[mod1] foo()
+```
+
+## Conclusion
+
+In this tutorial, you covered the following topics:
+
+-   How to create a Python  **module**
+-   Locations where the Python interpreter searches for a module
+-   How to obtain access to the objects defined in a module with the  `import`  statement
+-   How to create a module that is executable as a standalone script
+-   How to organize modules into  **packages**  and  **subpackages**
+-   How to control package initialization
+
+This will hopefully allow you to better understand how to gain access to the functionality available in the many third-party and built-in modules available in Python.
+
+Additionally, if you are developing your own application, creating your own  **modules**  and  **packages**  will help you organize and modularize your code, which makes coding, maintenance, and debugging easier.
+
+If you want to learn more, check out the following documentation at  **Python.org**:
+
+-   [The  `import`  system](https://docs.python.org/3/reference/import.html)
+-   [The Python tutorial: Modules](https://docs.python.org/3/tutorial/modules.html)
+
+
 # References
 [Python Modules and Packages – An Introduction](https://realpython.com/python-modules-packages/)
