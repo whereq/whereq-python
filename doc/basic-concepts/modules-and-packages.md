@@ -30,7 +30,7 @@ A module’s contents are accessed the same way in all three cases: with the imp
 
 Here, the focus will mostly be on modules that are written in Python. The cool thing about modules written in Python is that they are exceedingly straightforward to build. All you need to do is create a file that contains legitimate Python code and then give the file a name with a .py extension. That’s it! No special syntax is necessary.
 
-For example, suppose you have created a file called mod.py containing the following:
+For example, suppose you have created a file called **mod.py** containing the following:
 
 ```python
 s = "If Comrade Napoleon says it, it must be right."
