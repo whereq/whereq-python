@@ -154,7 +154,7 @@ NameError: name 'foo' is not defined
 To be accessed in the local context, names of objects defined in the module must be prefixed by `src.example.module.mod`:
 ```python
 >>> src.example.module.mod.msg
-'Hello Mars!.'
+'Hello Mars!'
 >>> src.example.module.mod.foo('apple')
 arg = apple
 ```
@@ -176,7 +176,7 @@ Following execution of the above statement, `<name(s)>` can be referenced in the
 ```python
 >>> from src.example.module.mod import msg, foo
 >>> msg
-'Hello Mars!.'
+'Hello Mars!'
 >>> foo('apple')
 arg = apple
 
@@ -209,7 +209,7 @@ This will place the names of _all_ objects from `<module_name>` into the local s
 ```python
 >>> from src.example.module.mod import *
 >>> msg
-'Hello Mars!.'
+'Hello Mars!'
 >>> int_array
 [100, 200, 300]
 >>> foo
@@ -237,7 +237,7 @@ This makes it possible to place names directly into the local symbol table but a
 >>> msg
 'bar'
 >>> string
-'Hello Mars!.'
+'Hello Mars!'
 >>> int_array
 [1, 2, 3]
 >>> alist
@@ -327,7 +327,7 @@ This can be useful for identifying what exactly has been added to the namespace 
 >>> dir()
 ['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'src']
 >>> src.example.module.mod.msg
-'Hello Mars!.'
+'Hello Mars!'
 >>> src.example.module.mod.foo(['apple', 'orange', 'pear'])
 arg = ['apple', 'orange', 'pear']
 
@@ -346,25 +346,22 @@ arg = ['apple', 'orange', 'pear']
 >>> dir()
 ['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'int_array', 'src', 'string', 'x']
 >>> string
-'Hello Mars!.'
+'Hello Mars!'
 ```
 
 When given an argument that is the name of a module, `dir()` lists the names defined in the module:
 ```python
->>> import mod
->>> dir(mod)
-['Foo', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
-'__name__', '__package__', '__spec__', 'a', 'foo', 's']
+>>> import src.example.module.mod
+>>> dir(src.example.module.mod)
+['Foo', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'foo', 'int_array', 'msg']
 ```
 
 ```python
 >>> dir()
-['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__']
->>> from mod import *
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__']
+>>> from src.example.module.mod import *
 >>> dir()
-['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'a', 'foo', 's']
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'foo', 'int_array', 'msg']
 ```
 
 
@@ -376,7 +373,7 @@ Here again is  `mod.py`  as it was defined above:
 **_mod.py_**
 
 ```python
-s = "If Comrade Napoleon says it, it must be right."
+s = "Hello Mars!"
 a = [100, 200, 300]
 
 def foo(arg):
@@ -388,8 +385,8 @@ class Foo:
 
 This can be run as a script:
 ```
-C:\Users\john\Documents>python mod.py
-C:\Users\john\Documents>
+[absolute_path]>python src\\example\\module\\mod.py
+[absolute_path]>
 ```
 
 
@@ -401,8 +398,8 @@ Let’s modify the above Python module so it does generate some output when run 
 **_mod.py_**
 
 ```python
-s = "If Comrade Napoleon says it, it must be right."
-a = [100, 200, 300]
+msg = "Hello Mars!"
+int_array = [100, 200, 300]
 
 def foo(arg):
     print(f'arg = {arg}')
@@ -410,28 +407,28 @@ def foo(arg):
 class Foo:
     pass
 
-print(s)
-print(a)
-foo('quux')
+print(msg)
+print(int_array)
+foo('apple')
 x = Foo()
 print(x)
 ```
 
 Now it should be a little more interesting:
 ```
-C:\Users\john\Documents>python mod.py
-If Comrade Napoleon says it, it must be right.
+[absolute_path]>python src\\example\\module\\mod.py
+Hello Mars!
 [100, 200, 300]
-arg = quux
-<__main__.Foo object at 0x02F101D0>
+arg = apple
+<__main__.Foo object at 0x0000020B2CD29E80>
 ```
 Unfortunately, now it also generates output when imported as a module:
 ```python
 >>> import mod
-If Comrade Napoleon says it, it must be right.
+Hello Mars!
 [100, 200, 300]
-arg = quux
-<mod.Foo object at 0x0169AD50>
+arg = apple
+<src.example.module.mod.Foo object at 0x00000149BC6CDB50>
 ```
 This is probably not what you want. It isn’t usual for a module to generate output when it is imported.
 
@@ -444,8 +441,8 @@ When a  `.py`  file is imported as a module, Python sets the special  **dunder**
 **_mod.py_**
 
 ```python
-s = "If Comrade Napoleon says it, it must be right."
-a = [100, 200, 300]
+msg = "Hello Mars!"
+int_array = [100, 200, 300]
 
 def foo(arg):
     print(f'arg = {arg}')
@@ -455,26 +452,26 @@ class Foo:
 
 if (__name__ == '__main__'):
     print('Executing as standalone script')
-    print(s)
-    print(a)
-    foo('quux')
+    print(msg)
+    print(int_array)
+    foo('apple')
     x = Foo()
     print(x)
 ```
 Now, if you run as a script, you get output:
 ```
-C:\Users\john\Documents>python mod.py
+[absolute_path]>python src\\example\\module\\mod.py
 Executing as standalone script
-If Comrade Napoleon says it, it must be right.
+Hello Mars!
 [100, 200, 300]
-arg = quux
-<__main__.Foo object at 0x03450690>
+arg = apple
+<__main__.Foo object at 0x000001E52D73A030>
 ```
 But if you import as a module, you don’t:
 ```python 
 >>> import mod
->>> mod.foo('grault')
-arg = grault
+>>> mod.foo('orange')
+arg = orange
 ```
 
 Modules are often designed with the capability to run as a standalone script for purposes of testing the functionality that is contained within the module. This is referred to as  **[unit testing](https://realpython.com/python-testing/).**  For example, suppose you have created a module  `fact.py`  containing a  **factorial**  function, as follows:
