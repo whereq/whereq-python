@@ -6,7 +6,7 @@
 * [The import Statement](#the-import-statement)
 	* [import <module_name>](#import-module_name)
 	* [from <module_name> import <name(s)>](#from-module_name-import-names)
-	* [from <module_name> import <name> as <alt_name>](#from-module_name-import-name-as-alt_name)
+	* [from <module_name> import \<name\> as <alt_name>](#from-module_name-import-name-as-alt_name)
 	* [import <module_name> as <alt_name>](#import-module_name-as-alt_name)
 * [The dir() Function](#the-dir-function)
 * [Executing a Module as a Script](#executing-a-module-as-a-script)
