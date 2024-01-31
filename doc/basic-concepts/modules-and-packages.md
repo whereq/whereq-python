@@ -138,7 +138,7 @@ From the caller, objects in the module are only accessible when prefixed with  `
 After the following  `import`  statement,  `mod`  is placed into the local symbol table. Thus,  `mod`  has meaning in the caller’s local context:
 
 ```python
->>> import mod
+>>> import src.example.module.mod
 >>> mod
 <module 'src.example.module.mod' from '[absolute_path]\\...\\whereq-python\\code\\mars\\src\\example\\module\\mod.py'>
 ```
