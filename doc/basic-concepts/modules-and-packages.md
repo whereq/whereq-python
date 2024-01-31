@@ -490,13 +490,13 @@ if (__name__ == '__main__'):
 The file can be treated as a module, and the fact() function imported:
 
 ```python 
->>> from fact import fact
+>>> from src.example.module.fact import fact
 >>> fact(6)
 720
 ```
 But it can also be run as a standalone by passing an integer argument on the command-line for testing:
 ```
-C:\Users\john\Documents>python fact.py 6
+[absolute_path]>python src\\example\\module\\fact.py 6
 720
 ```
 
@@ -508,16 +508,16 @@ Consider the following file  `mod.py`:
 
 **_mod.py_**
 ```python 
-a = [100, 200, 300]
-print('a =', a)
+int_array = [100, 200, 300]
+print('int_array =', int_array)
 ```
 ```python 
->>> import mod
-a = [100, 200, 300]
->>> import mod
->>> import mod
+>>> import src.example.module.mod
+int_array = [100, 200, 300]
+>>> import src.example.module.mod
+>>> import src.example.module.mod
 
->>> mod.a
+>>> src.example.module.mod.int_array
 [100, 200, 300]
 ```
 
@@ -526,15 +526,15 @@ The  `print()`  statement is not executed on subsequent imports. (For that matte
 If you make a change to a module and need to reload it, you need to either restart the interpreter or use a function called  `reload()`  from module  `importlib`:
 
 ```python 
->>> import mod
-a = [100, 200, 300]
+>>> import src.example.module.mod
+int_array = [100, 200, 300]
 
->>> import mod
+>>> import src.example.module.mod
 
 >>> import importlib
->>> importlib.reload(mod)
-a = [100, 200, 300]
-<module 'mod' from 'C:\\Users\\john\\Documents\\Python\\doc\\mod.py'>
+>>> importlib.reload(src.example.module.mod)
+int_array = [100, 200, 300]
+<module 'src.example.module.mod' from '[absolute_path]\\src\\example\\module\\mod.py'>
 ```
 
 ## Python Packages
@@ -662,7 +662,7 @@ _**__init__.py**_
 
 ```python 
 print(f'Invoking __init__.py for {__name__}')
-A = ['quux', 'corge', 'grault']
+A = ['apple', 'orange', 'pear']
 ```
 
 
@@ -681,7 +681,7 @@ Now when the package is imported, the global list A is initialized:
 >>> import pkg
 Invoking __init__.py for pkg
 >>> pkg.A
-['quux', 'corge', 'grault']
+['apple', 'orange', 'pear']
 ```
 
 A  **module**  in the package can access the global variable by importing it in turn:
@@ -701,7 +701,7 @@ class Foo:
 >>> from pkg import mod1
 Invoking __init__.py for pkg
 >>> mod1.foo()
-[mod1] foo() / A =  ['quux', 'corge', 'grault']
+[mod1] foo() / A =  ['apple', 'orange', 'pear']
 ```
 
 
