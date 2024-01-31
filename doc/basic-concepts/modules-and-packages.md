@@ -33,8 +33,8 @@ Here, the focus will mostly be on modules that are written in Python. The cool t
 For example, suppose you have created a file called **mod.py** containing the following:
 
 ```python
-s = "If Comrade Napoleon says it, it must be right."
-a = [100, 200, 300]
+msg = "Hello Mars!."
+int_array = [100, 200, 300]
 
 def foo(arg):
     print(f'arg = {arg}')
@@ -46,8 +46,8 @@ class Foo:
 
 Several objects are defined in  `mod.py`:
 
--   `s`  (a string)
--   `a`  (a list)
+-   `msg`  (a string)
+-   `int_array`  (a list)
 -   `foo()`  (a function)
 -   `Foo`  (a class)
 
@@ -55,12 +55,12 @@ Assuming  `mod.py`  is in an appropriate location, which you will learn more abo
 
 ```python 
 >>> import mod
->>> print(mod.s)
-If Comrade Napoleon says it, it must be right.
->>> mod.a
+>>> print(mod.msg)
+Hello Mars!.
+>>> mod.int_array
 [100, 200, 300]
->>> mod.foo(['quux', 'corge', 'grault'])
-arg = ['quux', 'corge', 'grault']
+>>> mod.foo(['apple', 'orange', 'pear'])
+arg = ['apple', 'orange', 'pear']
 >>> x = mod.Foo()
 >>> x
 <mod.Foo object at 0x03C181F0>
