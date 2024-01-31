@@ -175,26 +175,26 @@ Following execution of the above statement, `<name(s)>` can be referenced in the
 
 ```python
 >>> from src.example.module.mod import msg, foo
->>> src.example.module.mod.msg
+>>> msg
 'Hello Mars!.'
->>> src.example.module.mod.foo('apple')
+>>> foo('apple')
 arg = apple
 
 >>> from src.example.module.mod import Foo
 >>> x = Foo()
 >>> x
-<mod.Foo object at 0x02E3AD50>
+<src.example.module.mod.Foo object at 0x000001D1E07CDB50>
 ```
 
 Because this form of `import` places the object names directly into the caller’s symbol table, any objects that already exist with the same name will be _overwritten_:
 
 ```python
->>> a = ['foo', 'bar', 'baz']
->>> a
-['foo', 'bar', 'baz']
+>>> int_array = [1, 2, 3]
+>>> int_array
+[1, 2, 3]
 
->>> from mod import a
->>> a
+>>> from src.example.module.mod import int_array
+>>> int_array
 [100, 200, 300]
 ```
 
@@ -207,15 +207,15 @@ from <module_name> import *
 This will place the names of _all_ objects from `<module_name>` into the local symbol table, with the exception of any that begin with the [underscore (`_`) character](https://realpython.com/python-double-underscore/).
 
 ```python
->>> from mod import *
->>> s
-'If Comrade Napoleon says it, it must be right.'
->>> a
+>>> from src.example.module.mod import *
+>>> msg
+'Hello Mars!.'
+>>> int_array
 [100, 200, 300]
 >>> foo
-<function foo at 0x03B449C0>
+<function foo at 0x0000018EAAAAF380>
 >>> Foo
-<class 'mod.Foo'>
+<class 'src.example.module.mod.Foo'>
 ```
 
 This isn’t necessarily recommended in large-scale production code. It’s a bit dangerous because you are entering names into the local symbol table _en masse_. Unless you know them all well and can be confident there won’t be a conflict, you have a decent chance of overwriting an existing name inadvertently. However, this syntax is quite handy when you are just mucking around with the interactive interpreter, for testing or discovery purposes, because it quickly gives you access to everything a module has to offer without a lot of typing.
@@ -230,16 +230,16 @@ from <module_name> import <name> as <alt_name>[, <name> as <alt_name> …]
 This makes it possible to place names directly into the local symbol table but avoid conflicts with previously existing names:
 
 ```python
->>> s = 'foo'
->>> a = ['foo', 'bar', 'baz']
+>>> msg = 'bar'
+>>> int_array = [1, 2, 3]
 
->>> from mod import s as string, a as alist
->>> s
-'foo'
+>>> from src.example.module.mod import msg as string, int_array as alist
+>>> msg
+'bar'
 >>> string
-'If Comrade Napoleon says it, it must be right.'
->>> a
-['foo', 'bar', 'baz']
+'Hello Mars!.'
+>>> int_array
+[1, 2, 3]
 >>> alist
 [100, 200, 300]
 ```
@@ -250,28 +250,28 @@ You can also import an entire module under an alternate name:
 import <module_name> as <alt_name>
 ```
 ```python
->>> import mod as my_module
->>> my_module.a
+>>> import src.example.module.mod as my_module
+>>> my_module.int_array
 [100, 200, 300]
->>> my_module.foo('qux')
-arg = qux
+>>> my_module.foo('apple')
+arg = apple
 ```
 Module contents can be imported from within a [function definition](https://realpython.com/defining-your-own-python-function/). In that case, the `import` does not occur until the function is _called_:
 ```python
 >>> def bar():
-...     from mod import foo
-...     foo('corge')
+...     from src.example.module.mod import foo
+...     foo('orange')
 ...
-
 >>> bar()
-arg = corge
+arg = orange
 ```
 
 However, **Python 3** does not allow the indiscriminate `import *` syntax from within a function:
 ```python
 >>> def bar():
-...     from mod import *
+...     from src.example.module.mod import *
 ...
+  File "<stdin>", line 2
 SyntaxError: import * only allowed at module level
 ```
 
@@ -302,56 +302,51 @@ Object not found in module
 The built-in function `dir()` returns a list of defined names in a namespace. Without arguments, it produces an alphabetically sorted list of names in the current **local symbol table**:
 ```python
 >>> dir()
-['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__']
-
->>> qux = [1, 2, 3, 4, 5]
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__']
+>>>
+>>> int_array = [1, 2, 3, 4, 5]
 >>> dir()
-['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'qux']
-
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'int_array']
+>>>
 >>> class Bar():
 ...     pass
 ...
 >>> x = Bar()
 >>> dir()
-['Bar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'qux', 'x']
+['Bar', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'int_array', 'x']
 ```
 
-Note how the first call to  `dir()`  above lists several names that are automatically defined and already in the namespace when the interpreter starts. As new names are defined (`qux`,  `Bar`,  `x`), they appear on subsequent invocations of  `dir()`.
+Note how the first call to  `dir()`  above lists several names that are automatically defined and already in the namespace when the interpreter starts. As new names are defined (`int_array`,  `Bar`,  `x`), they appear on subsequent invocations of  `dir()`.
 
 This can be useful for identifying what exactly has been added to the namespace by an import statement:
 ```python
 >>> dir()
-['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__']
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__']
 
->>> import mod
+>>> import src.example.module.mod
 >>> dir()
-['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'mod']
->>> mod.s
-'If Comrade Napoleon says it, it must be right.'
->>> mod.foo([1, 2, 3])
-arg = [1, 2, 3]
+['__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'src']
+>>> src.example.module.mod.msg
+'Hello Mars!.'
+>>> src.example.module.mod.foo(['apple', 'orange', 'pear'])
+arg = ['apple', 'orange', 'pear']
 
->>> from mod import a, Foo
+
+>>> from src.example.module.mod import int_array, Foo
 >>> dir()
-['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'a', 'mod']
->>> a
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'int_array', 'src']
+>>> int_array
 [100, 200, 300]
 >>> x = Foo()
 >>> x
-<mod.Foo object at 0x002EAD50>
+<src.example.module.mod.Foo object at 0x00000149BC6CDB50>
 
->>> from mod import s as string
+
+>>> from src.example.module.mod import msg as string
 >>> dir()
-['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__',
-'__package__', '__spec__', 'a', 'mod', 'string', 'x']
+['Foo', '__annotations__', '__builtins__', '__doc__', '__loader__', '__name__', '__package__', '__spec__', 'int_array', 'src', 'string', 'x']
 >>> string
-'If Comrade Napoleon says it, it must be right.'
+'Hello Mars!.'
 ```
 
 When given an argument that is the name of a module, `dir()` lists the names defined in the module:
