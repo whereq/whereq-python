@@ -1,9 +1,9 @@
 import unittest
-from src.oo.inheritance import StringClass 
+from src.example.oo.inheritance import Animal
 
 class StringClassTest(unittest.TestCase):
   def test_static_method(self):
-    StringClass.StringClass.static_method()
+    self.animal = Animal.Animal("Cat")
 
 if __name__ == '__main__':
   unittest.main()
