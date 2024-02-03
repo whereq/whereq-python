@@ -13,6 +13,7 @@ Table of Contents
 -   [Boolean Type, Boolean Context, and “Truthiness”](#boolean-type-boolean-context-and-truthiness)
 -   [Built-In Functions](#built-in-functions)
     -   [Math](#math)
+    -   [Math Operators from Highest to Lowest Precedence](#math-operators-from-highest-to-lowest-precedence)
     -   [Type Conversion](#type-conversion)
     -   [Iterables and Iterators](#iterables-and-iterators)
     -   [Composite Data Type](#composite-data-type)
@@ -361,6 +362,18 @@ For now, a brief overview follows, just to give a feel for what is available. Se
 | pow() | Raises a number to a power |
 | round() | Rounds a floating-point value |
 | [`sum()`](https://realpython.com/python-sum-function/) | Sums the items of an iterable |
+
+### Math Operators from Highest to Lowest Precedence
+
+|**Operator**  |**Operation**  |**Example**  | **Evaluates to . . .** |
+|--|--|--|--|
+|**  |Exponent  |2 ** 3  |8  |
+|%  |Modulus/remainder  |22 % 8  |6  |
+|//  |Integer division/floored quotient |22 // 8  |2  |
+|/  |Division|22 / 8  |2.75  |
+|*  |Multiplication|3 * 5  |15  |
+|-  |Subtraction|5 - 2  |3  |
+|+  |Addition|2 + 2 |4  |
 
 
 ### Type Conversion
