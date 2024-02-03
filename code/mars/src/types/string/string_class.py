@@ -1,6 +1,6 @@
-from src import BaseClass
+from src import base_class
 
-class StringClass(BaseClass.BaseClass):
+class StringClass(base_class.BaseClass):
   @staticmethod
   def static_method():
     # pass  # A static method

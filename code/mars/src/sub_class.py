@@ -1,5 +1,5 @@
-from src import BaseClass
-class SubClass(BaseClass.BaseClass):
+from . import base_class
+class SubClass(base_class.BaseClass):
   def __init__(self):
     super().__init__()
 
