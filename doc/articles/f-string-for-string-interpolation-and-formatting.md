@@ -74,5 +74,16 @@ The `f-string` formats the provided value based on the **format specifier**, adh
 ```
 **Note** how in the second example, curly brackets were utilized to incorporate variables or expressions within the **format specifiers**. This flexibility allows for the creation of dynamic specifiers, which is quite advantageous. In the last example, a [`datetime`](python-datetime.md) object was formatted, which can be customized using special [date format specifiers](https://strftime.org/).
 
+## Other Relevant Features of F-Strings
+
+###Using an Object’s String Representations in F-Strings
+Python’s f-strings support two flags with special meaning in the interpolation process. These flags are closely related to how Python manages the [string representation](../__repr__vs__str__.md/#how-can-you-access-an-objects-string-representations) of objects. These flags are:
+
+|Flag  |Description  |
+|--|--|
+|!s  |Interpolates the string representation from the `.__str__()` method  |
+|!r  |Interpolates the string representation from the `.__repr__()` method  |
+
+
 # References
 [Python's F-String for String Interpolation and Formatting](https://realpython.com/python-f-strings/)
