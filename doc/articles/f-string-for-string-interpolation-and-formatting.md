@@ -77,7 +77,7 @@ The `f-string` formats the provided value based on the **format specifier**, adh
 ## Other Relevant Features of F-Strings
 
 ###Using an Object’s String Representations in F-Strings
-Python’s f-strings support two flags with special meaning in the interpolation process. These flags are closely related to how Python manages the [string representation](../__repr__vs__str__.md/#how-can-you-access-an-objects-string-representations) of objects. These flags are:
+Python’s f-strings support two flags with special meaning in the interpolation process. These flags are closely related to how Python manages the [string representation](../dive-deeper/__repr__vs__str__.md/#how-can-you-access-an-objects-string-representations) of objects. These flags are:
 
 |Flag  |Description  |
 |--|--|
