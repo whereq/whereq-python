@@ -358,7 +358,211 @@ False
 ### Character Classification
 
 
+### String Formatting
 
+|Function  |Desc  |Example |
+|--|--|--|
+|s.center(\<width>[, \<fill>])  |Centers a string in a field.  |'foo'.center(10)|
+|s.expandtabs(tabsize=8)  |Expands tabs in a string.  |'a\tb\tc'.expandtabs()|
+|s.ljust(<width>[, <fill>])|Left-justifies a string in field.|'foo'.ljust(10)|
+|s.lstrip([<chars>])|Trims leading characters from a string.|'   foo bar baz   '.lstrip()|
+|s.replace(<old>, <new>[, <count>])|Replaces occurrences of a substring within a string.|'foo bar foo baz foo qux'.replace('foo', 'grault')|
+|||'foo bar foo baz foo qux'.replace('foo', 'grault', 2)|
+|s.rjust(<width>[, <fill>])|Right-justifies a string in a field.|'foo'.rjust(10)|
+|s.rstrip([<chars>])|Trims trailing characters from a string.|'   foo bar baz   '.rstrip()|
+|||'foo.\$\$\$;'.rstrip(';$.')|
+|s.strip([<chars>])|Strips characters from the left and right ends of a string.|s = '   foo bar baz\t\t\t'.strip |
+|||'www.whereq.com'.strip('w.moc')|
+|||'www.whereq.com'.lstrip('w.moc').rstrip('w.moc')|
+|s.zfill(<width>)|Pads a string on the left with zeros.|'42'.zfill(5)|
+|||'+42'.zfill(8)|
+|||'foo'.zfill(6)|
+
+
+### Converting Between Strings and Lists
+`s.join(<iterable>)`
+
+> Concatenates strings from an iterable.
+
+`s.join(<iterable>)`  returns the string that results from concatenating the objects in  `<iterable>`  separated by  `s`.
+
+Note that  `.join()`  is invoked on  `s`, the separator string.  `<iterable>`  must be a sequence of string objects as well.
+
+Some sample code should help clarify. In the following example, the separator  `s`  is the string  `', '`, and  `<iterable>`  is a list of string values:
+
+```python
+>>> ', '.join(['foo', 'bar', 'baz', 'qux'])
+'foo, bar, baz, qux'
+```
+The result is a single string consisting of the list objects separated by commas.
+
+In the next example,  `<iterable>`  is specified as a single string value. When a string value is used as an iterable, it is interpreted as a list of the string’s individual characters:
+
+```python
+>>> list('corge')
+['c', 'o', 'r', 'g', 'e']
+
+>>> ':'.join('corge')
+'c:o:r:g:e'
+```
+Thus, the result of  `':'.join('corge')`  is a string consisting of each character in  `'corge'`  separated by  `':'`.
+
+This example fails because one of the objects in  `<iterable>`  is not a string:
+
+```python
+>>> '---'.join(['foo', 23, 'bar'])
+Traceback (most recent call last):
+  File "<pyshell#0>", line 1, in <module>
+  '---'.join(['foo', 23, 'bar'])
+TypeError: sequence item 1: expected str instance, int found
+```
+That can be remedied, though:
+
+```python
+>>> '---'.join(['foo', str(23), 'bar'])
+'foo---23---bar'
+```
+As you will soon see, many composite objects in Python can be construed as iterables, and  `.join()`  is especially useful for creating strings from them.
+
+`s.partition(<sep>)`
+
+> Divides a string based on a separator.
+
+`s.partition(<sep>)`  splits  `s`  at the first occurrence of string  `<sep>`. The return value is a three-part tuple consisting of:
+
+-   The portion of  `s`  preceding  `<sep>`
+-   `<sep>`  itself
+-   The portion of  `s`  following  `<sep>`
+
+Here are a couple examples of  `.partition()`  in action:
+
+```python
+>>> 'foo.bar'.partition('.')
+('foo', '.', 'bar')
+>>> 'foo@@bar@@baz'.partition('@@')
+('foo', '@@', 'bar@@baz')
+```
+If  `<sep>`  is not found in  `s`, the returned tuple contains  `s`  followed by two empty strings:
+
+```python
+>>> 'foo.bar'.partition('@@')
+('foo.bar', '', '')
+```
+**Remember:**  Lists and tuples are covered in the next tutorial.
+
+`s.rpartition(<sep>)`
+
+> Divides a string based on a separator.
+
+`s.rpartition(<sep>)`  functions exactly like  `s.partition(<sep>)`, except that  `s`  is split at the last occurrence of  `<sep>`  instead of the first occurrence:
+
+```python
+>>> 'foo@@bar@@baz'.partition('@@')
+('foo', '@@', 'bar@@baz')
+
+>>> 'foo@@bar@@baz'.rpartition('@@')
+('foo@@bar', '@@', 'baz')
+```
+`s.rsplit(sep=None, maxsplit=-1)`
+
+> Splits a string into a list of substrings.
+
+Without arguments,  `s.rsplit()`  splits  `s`  into substrings delimited by any sequence of whitespace and returns the substrings as a list:
+
+```python
+>>> 'foo bar baz qux'.rsplit()
+['foo', 'bar', 'baz', 'qux']
+>>> 'foo\n\tbar   baz\r\fqux'.rsplit()
+['foo', 'bar', 'baz', 'qux']
+```
+If  `<sep>`  is specified, it is used as the delimiter for splitting:
+
+```python
+>>> 'foo.bar.baz.qux'.rsplit(sep='.')
+['foo', 'bar', 'baz', 'qux']
+```
+(If  `<sep>`  is specified with a value of  [`None`](https://realpython.com/null-in-python/), the string is split delimited by whitespace, just as though  `<sep>`  had not been specified at all.)
+
+When  `<sep>`  is explicitly given as a delimiter, consecutive delimiters in  `s`  are assumed to delimit empty strings, which will be returned:
+
+```python
+>>> 'foo...bar'.rsplit(sep='.')
+['foo', '', '', 'bar']
+```
+This is not the case when  `<sep>`  is omitted, however. In that case, consecutive whitespace characters are combined into a single delimiter, and the resulting list will never contain empty strings:
+
+```python
+>>> 'foo\t\t\tbar'.rsplit()
+['foo', 'bar']
+```
+If the optional keyword parameter  `<maxsplit>`  is specified, a maximum of that many splits are performed, starting from the right end of  `s`:
+
+```python
+>>> 'www.realpython.com'.rsplit(sep='.', maxsplit=1)
+['www.realpython', 'com']
+```
+The default value for  `<maxsplit>`  is  `-1`, which means all possible splits should be performed—the same as if  `<maxsplit>`  is omitted entirely:
+
+```python
+>>> 'www.realpython.com'.rsplit(sep='.', maxsplit=-1)
+['www', 'realpython', 'com']
+>>> 'www.realpython.com'.rsplit(sep='.')
+['www', 'realpython', 'com']
+```
+`s.split(sep=None, maxsplit=-1)`
+
+> Splits a string into a list of substrings.
+
+`s.split()`  behaves exactly like  `s.rsplit()`, except that if  `<maxsplit>`  is specified, splits are counted from the left end of  `s`  rather than the right end:
+
+```python
+>>> 'www.realpython.com'.split('.', maxsplit=1)
+['www', 'realpython.com']
+>>> 'www.realpython.com'.rsplit('.', maxsplit=1)
+['www.realpython', 'com']
+```
+If  `<maxsplit>`  is not specified,  `.split()`  and  `.rsplit()`  are indistinguishable.
+
+`s.splitlines([<keepends>])`
+
+> Breaks a string at line boundaries.
+
+`s.splitlines()`  splits  `s`  up into lines and returns them in a list. Any of the following characters or character sequences is considered to constitute a line boundary:
+
+|EscapeSequence|CharacterMeaning|
+|--------------------|------------------------------------|
+|\n|Newline|
+|\r|CarriageReturn|
+|\r\n|CarriageReturn+LineFeed|
+|\vor\x0b|LineTabulation|
+|\for\x0c|FormFeed|
+|\x1c|FileSeparator|
+|\x1d|GroupSeparator|
+|\x1e|RecordSeparator|
+|\x85|NextLine(C1ControlCode)|
+|\u2028|UnicodeLineSeparator|
+|\u2029|UnicodeParagraphSeparator|
+
+Here is an example using several different line separators:
+
+```python
+>>> 'foo\nbar\r\nbaz\fqux\u2028quux'.splitlines()
+['foo', 'bar', 'baz', 'qux', 'quux']
+```
+If consecutive line boundary characters are present in the string, they are assumed to delimit blank lines, which will appear in the result list:
+
+```python
+>>> 'foo\f\f\fbar'.splitlines()
+['foo', '', '', 'bar']
+```
+If the optional  `<keepends>`  argument is specified and is truthy, then the lines boundaries are retained in the result strings:
+
+```python
+>>> 'foo\nbar\nbaz\nqux'.splitlines(True)
+['foo\n', 'bar\n', 'baz\n', 'qux']
+>>> 'foo\nbar\nbaz\nqux'.splitlines(1)
+['foo\n', 'bar\n', 'baz\n', 'qux']`
 
 # Reference
 [RealPython.com - python-strings](https://realpython.com/python-strings/)
+
