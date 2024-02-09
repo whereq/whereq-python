@@ -166,7 +166,7 @@ A typical use case of using different quotation marks in an f-string is when you
 >>> f"Hello, {person['name']}! You're {person['age']} years old."
 "Hello, Jane! You're 25 years old."
 ```
-In this example, you have a dictionary with a person’s data. To define the f-string, you use double quotes. To access the dictionary key, you use single quotes. In the  `"You're"`  contraction, you use a single quote as an apostrophe.
+**Note** In this example, you have a dictionary with a person’s data. To define the f-string, you use double quotes. To access the dictionary key, you use single quotes. In the  `"You're"`  contraction, you use a single quote as an apostrophe.
 
 So, where’s the quote-related limitation of f-strings up to Python 3.11? The problem is that you can’t reuse quotation marks in an f-string:
 
