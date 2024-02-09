@@ -153,6 +153,41 @@ variable ='Some mysterious value'
 
 Even though the whitespaces aren’t required, they can improve your code’s readability and the output’s format.
 
+### Using Quotation Marks
+
+
+Python supports several different types of quotation marks as delimiters in string  [literals](https://en.wikipedia.org/wiki/Literal_(computer_programming)). You can use single (`'`) and double quotes (`"`). You can also use triple single (`'''`) and triple double quotes (`"""`). All these string delimiters work for f-strings as well. This feature allows you to insert quotation marks in f-strings. It also lets you introduce string literals in the embedded expressions and even create nested f-strings.
+
+A typical use case of using different quotation marks in an f-string is when you need to use an apostrophe or access a dictionary key in an embedded expression:
+
+```python
+>>> person = {"name": "Jane", "age": 25}
+
+>>> f"Hello, {person['name']}! You're {person['age']} years old."
+"Hello, Jane! You're 25 years old."
+```
+In this example, you have a dictionary with a person’s data. To define the f-string, you use double quotes. To access the dictionary key, you use single quotes. In the  `"You're"`  contraction, you use a single quote as an apostrophe.
+
+So, where’s the quote-related limitation of f-strings up to Python 3.11? The problem is that you can’t reuse quotation marks in an f-string:
+
+```python
+>>> f"Hello, {person["name"]}!"
+  File "<input>", line 1
+  f"Hello, {person["name"]}!"
+  ^^^^
+SyntaxError: f-string: unmatched '['
+```
+In this example, when you try to reuse double quotes to access the dictionary key, your f-string fails, and Python raises a  [`SyntaxError`](https://realpython.com/invalid-syntax-python/)  exception.
+
+Fortunately, the new f-strings in Python 3.12 solved this issue, allowing you to reuse quotes:
+
+```python
+>>> # Python 3.12
+
+>>> person = {"name": "Jane", "age": 25}
+>>> f"Hello, {person["name"]}!"
+'Hello, Jane!'
+```
 
 ### Comparing Performance: F-String vs Traditional Tools
 ```python
@@ -289,6 +324,29 @@ Bonjour! Pythonista!
 You can support multiple languages using string templates. Then, you can handle localized string formatting based on the user’s locale. The  `.format()`  method will allow you to dynamically interpolate the appropriate strings depending on the user’s language selection.
 
 
+# Quiz
+## Quiz-1
+
+Say you wanted to create the string `'The "comedian" is Eric Idle, aged 74.'` and you’ve made the following variables available to your program:
+
+```python
+name = "Eric Idle"
+age = "74"
+```
+
+|`f-string`  |  |
+|--|--|
+|`f"The \"comedian\" is {name}, aged {age}."`  |Correct  |
+|`f'''The "comedian" is {name}, aged {age}.'''`  |Correct    |
+|`f"The "comedian" is {name}, aged {age}."`  |Wrong  |
+|`f'The "comedian" is {name}, aged {age}.'`  |Correct    |
+
+
+You can use various types of quotation marks inside your f-strings. Just make sure that you’re not using the same type of quotation marks to surround the f-string.
+
+If, for whatever reason, you need to use the same type of quotation mark on both the inside and the outside of the string, then you can escape the inside quotation marks with  `\`.
+
+You also need to keep this in mind when working with  [dictionaries](https://realpython.com/python-f-strings/#dictionaries)  in f-strings.
 
 # References
 [Python's F-String for String Interpolation and Formatting](https://realpython.com/python-f-strings/)
