@@ -292,4 +292,5 @@ You can support multiple languages using string templates. Then, you can handle 
 
 # References
 [Python's F-String for String Interpolation and Formatting](https://realpython.com/python-f-strings/)
-[Format Specification Mini-Language]（https://docs.python.org/3/library/string.html#formatspec）
+
+[Format Specification Mini-Language](https://docs.python.org/3/library/string.html#formatspec)
