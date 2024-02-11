@@ -1,6 +1,5 @@
 # Python Classes
 
-
 ## Special Methods and Protocols
 special-methods-and-protocols
 
