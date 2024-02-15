@@ -155,6 +155,98 @@ As you saw in the table above,  `*`  and  `+`  have special meanings in a regex 
 
 
 
+dot (`.`)
+
+> Specifies a wildcard.
+
+The  `.`  metacharacter matches any single character except a newline:
+
+```python
+>>> re.search('foo.bar', 'fooxbar')
+<_sre.SRE_Match object; span=(0, 7), match='fooxbar'>
+
+>>> print(re.search('foo.bar', 'foobar'))
+None
+>>> print(re.search('foo.bar', 'foo\nbar'))
+None
+```
+As a regex,  `foo.bar`  essentially means the characters  `'foo'`, then any character except newline, then the characters  `'bar'`. The first string shown above,  `'fooxbar'`, fits the bill because the  `.`  metacharacter matches the  `'x'`.
+
+The second and third strings fail to match. In the last case, although there’s a character between  `'foo'`  and  `'bar'`, it’s a newline, and by default, the  `.`  metacharacter doesn’t match a newline. There is, however, a way to force  `.`  to match a newline, which you’ll learn about at the end of this tutorial.
+
+`\w`  
+`\W`
+
+> Match based on whether a character is a word character.
+
+`\w`  matches any alphanumeric word character. Word characters are uppercase and lowercase letters, digits, and the underscore (`_`) character, so  `\w`  is essentially shorthand for  `[a-zA-Z0-9_]`:
+
+```python
+>>> re.search('\w', '#(.a$@&')
+<_sre.SRE_Match object; span=(3, 4), match='a'>
+>>> re.search('[a-zA-Z0-9_]', '#(.a$@&')
+<_sre.SRE_Match object; span=(3, 4), match='a'>
+```
+In this case, the first word character in the string  `'#(.a$@&'`  is  `'a'`.
+
+`\W`  is the opposite. It matches any non-word character and is equivalent to  `[^a-zA-Z0-9_]`:
+
+```python
+>>> re.search('\W', 'a_1*3Qb')
+<_sre.SRE_Match object; span=(3, 4), match='*'>
+>>> re.search('[^a-zA-Z0-9_]', 'a_1*3Qb')
+<_sre.SRE_Match object; span=(3, 4), match='*'>
+```
+Here, the first non-word character in  `'a_1*3!b'`  is  `'*'`.
+
+`\d`  
+`\D`
+
+> Match based on whether a character is a decimal digit.
+
+`\d`  matches any decimal digit character.  `\D`  is the opposite. It matches any character that  _isn’t_  a decimal digit:
+
+```python
+>>> re.search('\d', 'abc4def')
+<_sre.SRE_Match object; span=(3, 4), match='4'>
+
+>>> re.search('\D', '234Q678')
+<_sre.SRE_Match object; span=(3, 4), match='Q'>
+```
+`\d`  is essentially equivalent to  `[0-9]`, and  `\D`  is equivalent to  `[^0-9]`.
+
+`\s`  
+`\S`
+
+> Match based on whether a character represents whitespace.
+
+`\s`  matches any whitespace character:
+
+```python
+>>> re.search('\s', 'foo\nbar baz')
+<_sre.SRE_Match object; span=(3, 4), match='\n'>
+```
+Note that, unlike the dot wildcard metacharacter,  `\s`  does match a newline character.
+
+`\S`  is the opposite of  `\s`. It matches any character that  _isn’t_  whitespace:
+
+```python
+>>> re.search('\S', ' \n foo \n ')
+<_sre.SRE_Match object; span=(4, 5), match='f'>
+```
+Again,  `\s`  and  `\S`  consider a newline to be whitespace. In the example above, the first non-whitespace character is  `'f'`.
+
+The character class sequences  `\w`,  `\W`,  `\d`,  `\D`,  `\s`, and  `\S`  can appear inside a square bracket character class as well:
+
+```python
+>>> re.search('[\d\w\s]', '---3---')
+<_sre.SRE_Match object; span=(3, 4), match='3'>
+>>> re.search('[\d\w\s]', '---a---')
+<_sre.SRE_Match object; span=(3, 4), match='a'>
+>>> re.search('[\d\w\s]', '--- ---')
+<_sre.SRE_Match object; span=(3, 4), match=' '>
+```
+In this case,  `[\d\w\s]`  matches any digit, word, or whitespace character. And since  `\w`  includes  `\d`, the same character class could also be expressed slightly shorter as  `[\w\s]`.
 	
 # Reference
 [Regular Expressions: Regexes in Python (Part 1)](https://realpython.com/regex-python/)
