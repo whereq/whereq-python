@@ -1880,6 +1880,483 @@ position 4
 `u`,  `a`, and  `L`  are mutually exclusive. Only one of them may appear per group.
 
 
+## `re` Module Functions
+
+In addition to `re.search()`, the `re` module contains several other functions to help you perform regex-related tasks.
+
+`re.search()`  can take an optional  `<flags>`  argument, which specifies  [flags](regular-expression.md/#modifying-regular-expression-matching-with-flags)  that modify parsing behavior. All the functions shown below, with the exception of  `re.escape()`, support the  `<flags>`  argument in the same way.
+
+You can specify  `<flags>`  as either a positional argument or a keyword argument:
+
+Python
+
+`re.search(<regex>, <string>, <flags>)`
+`re.search(<regex>, <string>, flags=<flags>)` 
+
+The default for  `<flags>`  is always  `0`, which indicates no special modification of matching behavior. Remember from the  [discussion of flags in the previous tutorial](regular-expression.md/#supported-regular-expression-flags)  that the  `re.UNICODE`  flag is always set by default.
+
+
+The available regex functions in the Python  `re`  module fall into the following three categories:
+
+1.  Searching functions
+2.  Substitution functions
+3.  Utility functions
+
+
+### Searching Functions
+
+Searching functions scan a search string for one or more matches of the specified regex:
+
+|Function  |Description  |
+|--|--|
+|re.search()  |Scans a string for a regex match  |
+|re.match()  |Looks for a regex match at the beginning of a string  |
+|re.fullmatch()  |Looks for a regex match on an entire string  |
+|re.findall()  |Returns a [list](lists-tuples.md) of all regex matches in a string  |
+|`re.finditer()`  |Returns an iterator that yields regex matches from a string  |
+
+As you can see from the table, these functions are similar to one another. But each one tweaks the searching functionality in its own way.
+
+`re.search(<regex>, <string>, flags=0)`
+
+> Scans a string for a regex match.
+
+
+`re.search(<regex>, <string>)`  looks for any location in  `<string>`  where  `<regex>`  matches:
+
+```python
+>>> re.search(r'(\d+)', 'foo123bar')
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> re.search(r'[a-z]+', '123FOO456', flags=re.IGNORECASE)
+<_sre.SRE_Match object; span=(3, 6), match='FOO'>
+
+>>> print(re.search(r'\d+', 'foo.bar'))
+None
+```
+The function returns a match object if it finds a match and  [`None`](null-in-python.md)  otherwise.
+
+`re.match(<regex>, <string>, flags=0)`
+
+> Looks for a regex match at the beginning of a string.
+
+This is identical to  `re.search()`, except that  `re.search()`  returns a match if  `<regex>`  matches  _anywhere_  in  `<string>`, whereas  `re.match()`  returns a match only if  `<regex>`  matches at the  _beginning_  of  `<string>`:
+
+```python
+>>> re.search(r'\d+', '123foobar')
+<_sre.SRE_Match object; span=(0, 3), match='123'>
+>>> re.search(r'\d+', 'foo123bar')
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+
+>>> re.match(r'\d+', '123foobar')
+<_sre.SRE_Match object; span=(0, 3), match='123'>
+>>> print(re.match(r'\d+', 'foo123bar'))
+None
+```
+In the above example,  `re.search()`  matches when the digits are both at the beginning of the string and in the middle, but  `re.match()`  matches only when the digits are at the beginning.
+
+Remember from the previous tutorial in this series that if  `<string>`  contains embedded newlines, then the  [`MULTILINE`  flag](regular-expression.md/#modifying-regular-expression-matching-with-flags)  causes  `re.search()`  to match the caret (`^`) anchor metacharacter either at the beginning of  `<string>`  or at the beginning of any line contained within  `<string>`:
+
+```python
+ 1>>> s = 'foo\nbar\nbaz'
+ 2
+ 3>>> re.search('^foo', s)
+ 4<_sre.SRE_Match object; span=(0, 3), match='foo'>
+ 5>>> re.search('^bar', s, re.MULTILINE) 6<_sre.SRE_Match object; span=(4, 7), match='bar'>
+```
+The  `MULTILINE`  flag does not affect  `re.match()`  in this way:
+
+```python
+ 1>>> s = 'foo\nbar\nbaz'
+ 2
+ 3>>> re.match('^foo', s)
+ 4<_sre.SRE_Match object; span=(0, 3), match='foo'>
+ 5>>> print(re.match('^bar', s, re.MULTILINE)) 6None
+```
+Even with the  `MULTILINE`  flag set,  `re.match()`  will match the caret (`^`) anchor only at the beginning of  `<string>`, not at the beginning of lines contained within  `<string>`.
+
+Note that, although it illustrates the point, the caret (`^`) anchor on  **line 3**  in the above example is redundant. With  `re.match()`, matches are essentially always anchored at the beginning of the string.
+
+
+```python
+>>> re.search(r'\d+', '123foobar')
+<_sre.SRE_Match object; span=(0, 3), match='123'>
+>>> re.search(r'\d+', 'foo123bar')
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+
+>>> re.match(r'\d+', '123foobar')
+<_sre.SRE_Match object; span=(0, 3), match='123'>
+>>> print(re.match(r'\d+', 'foo123bar'))
+None
+
+```
+
+In the above example,  `re.search()`  matches when the digits are both at the beginning of the string and in the middle, but  `re.match()`  matches only when the digits are at the beginning.
+
+Remember from the previous tutorial in this series that if  `<string>`  contains embedded newlines, then the  [`MULTILINE`  flag](regular-expressions.md/#modifying-regular-expression-matching-with-flags)  causes  `re.search()`  to match the caret (`^`) anchor metacharacter either at the beginning of  `<string>`  or at the beginning of any line contained within  `<string>`:
+
+```python
+ 1>>> s = 'foo\nbar\nbaz'
+ 2
+ 3>>> re.search('^foo', s)
+ 4<_sre.SRE_Match object; span=(0, 3), match='foo'>
+ 5>>> re.search('^bar', s, re.MULTILINE) 6<_sre.SRE_Match object; span=(4, 7), match='bar'>
+```
+The  `MULTILINE`  flag does not affect  `re.match()`  in this way:
+
+```python
+ 1>>> s = 'foo\nbar\nbaz'
+ 2
+ 3>>> re.match('^foo', s)
+ 4<_sre.SRE_Match object; span=(0, 3), match='foo'>
+ 5>>> print(re.match('^bar', s, re.MULTILINE)) 6None
+```
+Even with the  `MULTILINE`  flag set,  `re.match()`  will match the caret (`^`) anchor only at the beginning of  `<string>`, not at the beginning of lines contained within  `<string>`.
+
+Note that, although it illustrates the point, the caret (`^`) anchor on  **line 3**  in the above example is redundant. With  `re.match()`, matches are essentially always anchored at the beginning of the string.
+
+`re.fullmatch(<regex>, <string>, flags=0)`
+
+> Looks for a regex match on an entire string.
+
+This is similar to  `re.search()`  and  `re.match()`, but  `re.fullmatch()`  returns a match only if  `<regex>`  matches  `<string>`  in its entirety:
+
+```python
+ 1>>> print(re.fullmatch(r'\d+', '123foo'))
+ 2None
+ 3>>> print(re.fullmatch(r'\d+', 'foo123'))
+ 4None
+ 5>>> print(re.fullmatch(r'\d+', 'foo123bar'))
+ 6None
+ 7>>> re.fullmatch(r'\d+', '123') 8<_sre.SRE_Match object; span=(0, 3), match='123'> 9
+10>>> re.search(r'^\d+$', '123')
+11<_sre.SRE_Match object; span=(0, 3), match='123'>
+```
+In the call on  **line 7**, the search string  `'123'`  consists entirely of digits from beginning to end. So that is the only case in which  `re.fullmatch()`  returns a match.
+
+The  `re.search()`  call on  **line 10**, in which the  `\d+`  regex is explicitly anchored at the start and end of the search string, is functionally equivalent.
+
+`re.findall(<regex>, <string>, flags=0)`
+
+> Returns a list of all matches of a regex in a string.
+
+`re.findall(<regex>, <string>)`  returns a list of all non-overlapping matches of  `<regex>`  in  `<string>`. It scans the search string from left to right and returns all matches in the order found:
+
+```python
+>>> re.findall(r'\w+', '...foo,,,,bar:%$baz//|')
+['foo', 'bar', 'baz']
+```
+If  `<regex>`  contains a capturing group, then the return list contains only contents of the group, not the entire match:
+
+```python
+>>> re.findall(r'#(\w+)#', '#foo#.#bar#.#baz#')
+['foo', 'bar', 'baz']
+```
+In this case, the specified regex is  `#(\w+)#`. The matching strings are  `'#foo#'`,  `'#bar#'`, and  `'#baz#'`. But the hash (`#`) characters don’t appear in the return list because they’re outside the grouping parentheses.
+
+If  `<regex>`  contains more than one capturing group, then  `re.findall()`  returns a list of tuples containing the captured groups. The length of each tuple is equal to the number of groups specified:
+
+```python
+ 1>>> re.findall(r'(\w+),(\w+)', 'foo,bar,baz,qux,quux,corge') 2[('foo', 'bar'), ('baz', 'qux'), ('quux', 'corge')]
+ 3
+ 4>>> re.findall(r'(\w+),(\w+),(\w+)', 'foo,bar,baz,qux,quux,corge') 5[('foo', 'bar', 'baz'), ('qux', 'quux', 'corge')]
+```
+In the above example, the regex on  **line 1**  contains two capturing groups, so  `re.findall()`  returns a list of three two-tuples, each containing two captured matches.  **Line 4**  contains three groups, so the return value is a list of two three-tuples.
+
+`re.finditer(<regex>, <string>, flags=0)`
+
+> Returns an iterator that yields regex matches.
+
+`re.finditer(<regex>, <string>)`  scans  `<string>`  for non-overlapping matches of  `<regex>`  and returns an iterator that yields the match objects from any it finds. It scans the search string from left to right and returns matches in the order it finds them:
+
+```python
+>>> it = re.finditer(r'\w+', '...foo,,,,bar:%$baz//|')
+>>> next(it)
+<_sre.SRE_Match object; span=(3, 6), match='foo'> >>> next(it)
+<_sre.SRE_Match object; span=(10, 13), match='bar'> >>> next(it)
+<_sre.SRE_Match object; span=(16, 19), match='baz'> >>> next(it)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+
+>>> for i in re.finditer(r'\w+', '...foo,,,,bar:%$baz//|'):
+...     print(i)
+...
+<_sre.SRE_Match object; span=(3, 6), match='foo'>
+<_sre.SRE_Match object; span=(10, 13), match='bar'>
+<_sre.SRE_Match object; span=(16, 19), match='baz'>
+```
+`re.findall()`  and  `re.finditer()`  are very similar, but they differ in two respects:
+
+1.  `re.findall()`  returns a list, whereas  `re.finditer()`  returns an iterator.
+    
+2.  The items in the list that  `re.findall()`  returns are the actual matching strings, whereas the items yielded by the iterator that  `re.finditer()`  returns are match objects.
+    
+
+Any task that you could accomplish with one, you could probably also manage with the other. Which one you choose will depend on the circumstances. As you’ll see later in this tutorial, a lot of useful information can be obtained from a match object. If you need that information, then  `re.finditer()`  will probably be the better choice.
+
+### Substitution Functions
+
+Substitution functions replace portions of a search string that match a specified regex:
+
+
+|Function  |Description  |
+|--|--|
+|re.sub()  |Scans a string for regex matches, replaces the matching portions of the string with the specified replacement string, and returns the result  |
+|re.subn()  |Behaves just like `re.sub()` but also returns information regarding the number of substitutions made  |
+
+Both  `re.sub()`  and  `re.subn()`  create a new string with the specified substitutions and return it. The original string remains unchanged. (Remember that  [strings are immutable](strings-and-character-data-in-python.md/#modifying-strings)  in Python, so it wouldn’t be possible for these functions to modify the original string.)
+
+`re.sub(<regex>, <repl>, <string>, count=0, flags=0)`
+
+> Returns a new string that results from performing replacements on a search string.
+
+`re.sub(<regex>, <repl>, <string>)`  finds the leftmost non-overlapping occurrences of  `<regex>`  in  `<string>`, replaces each match as indicated by  `<repl>`, and returns the result.  `<string>`  remains unchanged.
+
+`<repl>`  can be either a string or a function, as explained below.
+
+#### Substitution by String
+
+
+If  `<repl>`  is a string, then  `re.sub()`  inserts it into  `<string>`  in place of any sequences that match  `<regex>`:
+
+```python
+ 1>>> s = 'foo.123.bar.789.baz'
+ 2
+ 3>>> re.sub(r'\d+', '#', s)
+ 4'foo.#.bar.#.baz'
+ 5>>> re.sub('[a-z]+', '(*)', s)
+ 6'(*).123.(*).789.(*)'
+```
+On  **line 3**, the string  `'#'`  replaces sequences of digits in  `s`. On  **line 5**, the string  `'(*)'`  replaces sequences of lowercase letters. In both cases,  `re.sub()`  returns the modified string as it always does.
+
+`re.sub()`  replaces numbered backreferences (`\<n>`) in  `<repl>`  with the text of the corresponding captured group:
+
+```python
+>>> re.sub(r'(\w+),bar,baz,(\w+)', r'\2,bar,baz,\1', 'foo,bar,baz,qux')
+'qux,bar,baz,foo'
+```
+Here, captured groups 1 and 2 contain  `'foo'`  and  `'qux'`. In the replacement string  `'\2,bar,baz,\1'`,  `'foo'`  replaces  `\1`  and  `'qux'`  replaces  `\2`.
+
+You can also refer to named backreferences created with  `(?P<name><regex>)`  in the replacement string using the metacharacter sequence  `\g<name>`:
+
+```python
+>>> re.sub(r'foo,(?P<w1>\w+),(?P<w2>\w+),qux', r'foo,\g<w2>,\g<w1>,qux', 'foo,bar,baz,qux')
+'foo,baz,bar,qux'
+```
+In fact, you can also refer to  _numbered_  backreferences this way by specifying the group number inside the angled brackets:
+
+```python
+>>> re.sub(r'foo,(\w+),(\w+),qux', r'foo,\g<2>,\g<1>,qux', 'foo,bar,baz,qux')
+'foo,baz,bar,qux'
+```
+You may need to use this technique to avoid ambiguity in cases where a numbered backreference is immediately followed by a literal digit character. For example, suppose you have a string like  `'foo 123 bar'`  and want to add a  `'0'`  at the end of the digit sequence. You might try this:
+
+```python
+>>> re.sub(r'(\d+)', r'\10', 'foo 123 bar') Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python3.6/re.py", line 191, in sub
+  return _compile(pattern, flags).sub(repl, string, count)
+  File "/usr/lib/python3.6/re.py", line 326, in _subx
+  template = _compile_repl(template, pattern)
+  File "/usr/lib/python3.6/re.py", line 317, in _compile_repl
+  return sre_parse.parse_template(repl, pattern)
+  File "/usr/lib/python3.6/sre_parse.py", line 943, in parse_template
+  addgroup(int(this[1:]), len(this) - 1)
+  File "/usr/lib/python3.6/sre_parse.py", line 887, in addgroup
+  raise s.error("invalid group reference %d" % index, pos)
+sre_constants.error: invalid group reference 10 at position 1
+```
+Alas, the regex parser in Python interprets  `\10`  as a backreference to the tenth captured group, which doesn’t exist in this case. Instead, you can use  `\g<1>`  to refer to the group:
+
+```python
+>>> re.sub(r'(\d+)', r'\g<1>0', 'foo 123 bar')
+'foo 1230 bar'
+```
+The backreference  `\g<0>`  refers to the text of the entire match. This is valid even when there are no grouping parentheses in  `<regex>`:
+
+```python
+>>> re.sub(r'\d+', '/\g<0>/', 'foo 123 bar')
+'foo /123/ bar'
+```
+If  `<regex>`  specifies a zero-length match, then  `re.sub()`  will substitute  `<repl>`  into every character position in the string:
+
+```python
+>>> re.sub('x*', '-', 'foo')
+'-f-o-o-'
+```
+In the example above, the regex  `x*`  matches any zero-length sequence, so  `re.sub()`  inserts the replacement string at every character position in the string—before the first character, between each pair of characters, and after the last character.
+
+If  `re.sub()`  doesn’t find any matches, then it always returns  `<string>`  unchanged.
+
+
+#### Substitution by Function
+
+If you specify  `<repl>`  as a function, then  `re.sub()`  calls that function for each match found. It passes each corresponding match object as an argument to the function to provide information about the match. The function return value then becomes the replacement string:
+```python
+>>> def f(match_obj):
+...     s = match_obj.group(0)  # The matching string
+...
+...     # s.isdigit() returns True if all characters in s are digits
+...     if s.isdigit():
+...         return str(int(s) * 10)
+...     else:
+...         return s.upper()
+...
+>>> re.sub(r'\w+', f, 'foo.10.bar.20.baz.30')
+'FOO.100.BAR.200.BAZ.300'
+``` 
+
+#### Limiting the Number of Replacements
+
+
+If you specify a positive integer for the optional  `count`  parameter, then  `re.sub()`  performs at most that many replacements:
+```python
+>>> re.sub(r'\w+', 'xxx', 'foo.bar.baz.qux')
+'xxx.xxx.xxx.xxx'
+>>> re.sub(r'\w+', 'xxx', 'foo.bar.baz.qux', count=2)
+'xxx.xxx.baz.qux'
+``` 
+
+As with most  `re`  module functions,  `re.sub()`  accepts an optional  `<flags>`  argument as well.
+
+In this example,  `f()`  gets called for each match. As a result,  `re.sub()`  converts each alphanumeric portion of  `<string>`  to all uppercase and multiplies each numeric portion by  `10`.
+
+
+
+`re.subn(<regex>, <repl>, <string>, count=0, flags=0)`
+
+> Returns a new string that results from performing replacements on a search string and also returns the number of substitutions made.
+
+`re.subn()`  is identical to  `re.sub()`, except that  `re.subn()`  returns a two-tuple consisting of the modified string and the number of substitutions made:
+```python
+>>> re.subn(r'\w+', 'xxx', 'foo.bar.baz.qux')
+('xxx.xxx.xxx.xxx', 4)
+>>> re.subn(r'\w+', 'xxx', 'foo.bar.baz.qux', count=2)
+('xxx.xxx.baz.qux', 2)
+
+>>> def f(match_obj):
+...     m = match_obj.group(0)
+...     if m.isdigit():
+...         return str(int(m) * 10)
+...     else:
+...         return m.upper()
+...
+>>> re.subn(r'\w+', f, 'foo.10.bar.20.baz.30')
+('FOO.100.BAR.200.BAZ.300', 6)
+``` 
+
+In all other respects,  `re.subn()`  behaves just like  `re.sub()`.
+
+
+#### Utility Functions
+
+|Function  |Description  |
+|--|--|
+|re.split()  |Splits a string into [substrings](python-string-contains-substring.md) using a regex as a delimiter  |
+|re.escape()  |Escapes characters in a regex  |
+
+These are functions that involve regex matching but don’t clearly fall into either of the categories described above.
+
+`re.split(<regex>, <string>, maxsplit=0, flags=0)`
+
+> Splits a string into substrings.
+
+`re.split(<regex>, <string>)`  splits  `<string>`  into substrings using  `<regex>`  as the delimiter and returns the substrings as a list.
+
+The following example splits the specified string into substrings delimited by a comma (`,`), semicolon (`;`), or slash (`/`) character, surrounded by any amount of whitespace:
+
+```python
+>>> re.split('\s*[,;/]\s*', 'foo,bar  ;  baz / qux')
+['foo', 'bar', 'baz', 'qux']
+```
+If  `<regex>`  contains capturing groups, then the return list includes the matching delimiter strings as well:
+
+```python
+>>> re.split('(\s*[,;/]\s*)', 'foo,bar  ;  baz / qux')
+['foo', ',', 'bar', '  ;  ', 'baz', ' / ', 'qux']
+```
+This time, the return list contains not only the substrings  `'foo'`,  `'bar'`,  `'baz'`, and  `'qux'`  but also several delimiter strings:
+
+-   `','`
+-   `' ; '`
+-   `' / '`
+
+This can be useful if you want to split  `<string>`  apart into delimited tokens, process the tokens in some way, then piece the string back together using the same delimiters that originally separated them:
+
+```python
+>>> string = 'foo,bar  ;  baz / qux'
+>>> regex = r'(\s*[,;/]\s*)'
+>>> a = re.split(regex, string)
+
+>>> # List of tokens and delimiters
+>>> a
+['foo', ',', 'bar', '  ;  ', 'baz', ' / ', 'qux']
+
+>>> # Enclose each token in <>'s
+>>> for i, s in enumerate(a):
+...
+...     # This will be True for the tokens but not the delimiters
+...     if not re.fullmatch(regex, s):
+...         a[i] = f'<{s}>'
+...
+
+>>> # Put the tokens back together using the same delimiters
+>>> ''.join(a)
+'<foo>,<bar>  ;  <baz> / <qux>'
+```
+If you need to use groups but don’t want the delimiters included in the return list, then you can use noncapturing groups:
+
+```python
+>>> string = 'foo,bar  ;  baz / qux'
+>>> regex = r'(?:\s*[,;/]\s*)'
+>>> re.split(regex, string)
+['foo', 'bar', 'baz', 'qux']
+```
+If the optional  `maxsplit`  argument is present and greater than zero, then  `re.split()`  performs at most that many splits. The final element in the return list is the remainder of  `<string>`  after all the splits have occurred:
+
+```python
+>>> s = 'foo, bar, baz, qux, quux, corge'
+
+>>> re.split(r',\s*', s)
+['foo', 'bar', 'baz', 'qux', 'quux', 'corge']
+>>> re.split(r',\s*', s, maxsplit=3)
+['foo', 'bar', 'baz', 'qux, quux, corge']
+```
+Explicitly specifying  `maxsplit=0`  is equivalent to omitting it entirely. If  `maxsplit`  is negative, then  `re.split()`  returns  `<string>`  unchanged (in case you were looking for a rather elaborate way of doing nothing at all).
+
+If  `<regex>`  contains capturing groups so that the return list includes delimiters, and  `<regex>`  matches the start of  `<string>`, then  `re.split()`  places an empty string as the first element in the return list. Similarly, the last item in the return list is an empty string if  `<regex>`  matches the end of  `<string>`:
+
+```python
+>>> re.split('(/)', '/foo/bar/baz/')
+['', '/', 'foo', '/', 'bar', '/', 'baz', '/', '']
+```
+In this case, the  `<regex>`  delimiter is a single slash (`/`) character. In a sense, then, there’s an empty string to the left of the first delimiter and to the right of the last one. So it makes sense that  `re.split()`  places empty strings as the first and last elements of the return list.
+
+
+`re.escape(<regex>)`
+
+> Escapes characters in a regex.
+
+`re.escape(<regex>)`  returns a copy of  `<regex>`  with each nonword character (anything other than a letter, digit, or underscore) preceded by a backslash.
+
+This is useful if you’re calling one of the  `re`  module functions, and the  `<regex>`  you’re passing in has a lot of special characters that you want the parser to take literally instead of as metacharacters. It saves you the trouble of putting in all the backslash characters manually:
+```python
+ 1>>> print(re.match('foo^bar(baz)|qux', 'foo^bar(baz)|qux'))
+ 2None
+ 3>>> re.match('foo\^bar\(baz\)\|qux', 'foo^bar(baz)|qux')
+ 4<_sre.SRE_Match object; span=(0, 16), match='foo^bar(baz)|qux'>
+ 5
+ 6>>> re.escape('foo^bar(baz)|qux') == 'foo\^bar\(baz\)\|qux'
+ 7True
+ 8>>> re.match(re.escape('foo^bar(baz)|qux'), 'foo^bar(baz)|qux')
+ 9<_sre.SRE_Match object; span=(0, 16), match='foo^bar(baz)|qux'>
+``` 
+
+In this example, there isn’t a match on  **line 1**  because the regex  `'foo^bar(baz)|qux'`  contains special characters that behave as metacharacters. On  **line 3**, they’re explicitly escaped with backslashes, so a match occurs.  **Lines 6 and 8**  demonstrate that you can achieve the same effect using  `re.escape()`.
+
+
+## Compiled Regex Objects in Python
+
 
 # Reference
 [Regular Expressions: Regexes in Python (Part 1)](https://realpython.com/regex-python/)
