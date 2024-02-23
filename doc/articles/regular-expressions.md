@@ -2358,6 +2358,762 @@ In this example, there isn’t a match on  **line 1**  because the regex  `'foo^
 ## Compiled Regex Objects in Python
 
 
+The  `re`  module supports the capability to precompile a regex in Python into a  **regular expression object**  that can be repeatedly used later.
+
+`re.compile(<regex>, flags=0)`
+
+> Compiles a regex into a regular expression object.
+
+`re.compile(<regex>)`  compiles  `<regex>`  and returns the corresponding regular expression object. If you include a  `<flags>`  value, then the corresponding flags apply to any searches performed with the object.
+
+There are two ways to use a compiled regular expression object. You can specify it as the first argument to the  `re`  module functions in place of  `<regex>`:
+
+```python
+re_obj = re.compile(<regex>, <flags>)
+result = re.search(re_obj, <string>)
+```
+You can also invoke a method directly from a regular expression object:
+
+```python
+re_obj = re.compile(<regex>, <flags>)
+result = re_obj.search(<string>)
+```
+Both of the examples above are equivalent to this:
+
+```python
+result = re.search(<regex>, <string>, <flags>)
+```
+Here’s one of the examples you saw previously, recast using a compiled regular expression object:
+
+```python
+>>> re.search(r'(\d+)', 'foo123bar')
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+
+>>> re_obj = re.compile(r'(\d+)')
+>>> re.search(re_obj, 'foo123bar') <_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> re_obj.search('foo123bar') <_sre.SRE_Match object; span=(3, 6), match='123'>
+```
+Here’s another, which also uses the  `IGNORECASE`  flag:
+
+```python
+ 1>>> r1 = re.search('ba[rz]', 'FOOBARBAZ', flags=re.I) 2
+ 3>>> re_obj = re.compile('ba[rz]', flags=re.I)
+ 4>>> r2 = re.search(re_obj, 'FOOBARBAZ') 5>>> r3 = re_obj.search('FOOBARBAZ') 6
+ 7>>> r1
+ 8<_sre.SRE_Match object; span=(3, 6), match='BAR'>
+ 9>>> r2
+10<_sre.SRE_Match object; span=(3, 6), match='BAR'>
+11>>> r3
+12<_sre.SRE_Match object; span=(3, 6), match='BAR'>
+```
+In this example, the statement on  **line 1**  specifies regex  `ba[rz]`  directly to  `re.search()`  as the first argument. On  **line 4**, the first argument to  `re.search()`  is the compiled regular expression object  `re_obj`. On  **line 5**,  `search()`  is invoked directly on  `re_obj`. All three cases produce the same match.
+
+### Why Bother Compiling a Regex?
+
+What good is precompiling? There are a couple of possible advantages.
+
+If you use a particular regex in your Python code frequently, then precompiling allows you to separate out the regex definition from its uses. This enhances  [modularity](https://en.wikipedia.org/wiki/Modular_programming). Consider this example:
+
+```python
+>>> s1, s2, s3, s4 = 'foo.bar', 'foo123bar', 'baz99', 'qux & grault'
+
+>>> import re
+>>> re.search('\d+', s1)
+>>> re.search('\d+', s2)
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> re.search('\d+', s3)
+<_sre.SRE_Match object; span=(3, 5), match='99'>
+>>> re.search('\d+', s4)
+```
+Here, the regex  `\d+`  appears several times. If, in the course of maintaining this code, you decide you need a different regex, then you’ll need to change it in each location. That’s not so bad in this small example because the uses are close to one another. But in a larger application, they might be widely scattered and difficult to track down.
+
+The following is more modular and more maintainable:
+
+```python
+>>> s1, s2, s3, s4 = 'foo.bar', 'foo123bar', 'baz99', 'qux & grault'
+>>> re_obj = re.compile('\d+')
+
+>>> re_obj.search(s1)
+>>> re_obj.search(s2)
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> re_obj.search(s3)
+<_sre.SRE_Match object; span=(3, 5), match='99'>
+>>> re_obj.search(s4)
+```
+Then again, you can achieve similar modularity without precompiling by using variable assignment:
+
+```python
+>>> s1, s2, s3, s4 = 'foo.bar', 'foo123bar', 'baz99', 'qux & grault'
+>>> regex = '\d+'
+
+>>> re.search(regex, s1)
+>>> re.search(regex, s2)
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> re.search(regex, s3)
+<_sre.SRE_Match object; span=(3, 5), match='99'>
+>>> re.search(regex, s4)
+```
+In theory, you might expect precompilation to result in faster execution time as well. Suppose you call  `re.search()`  many thousands of times on the same regex. It might seem like compiling the regex once ahead of time would be more efficient than recompiling it each of the thousands of times it’s used.
+
+In practice, though, that isn’t the case. The truth is that the  `re`  module compiles and  [caches](https://en.wikipedia.org/wiki/Cache_(computing)#Software_caches)  a regex when it’s used in a function call. If the same regex is used subsequently in the same Python code, then it isn’t recompiled. The compiled value is fetched from cache instead. So the performance advantage is minimal.
+
+All in all, there isn’t any immensely compelling reason to compile a regex in Python. Like much of Python, it’s just one more tool in your toolkit that you can use if you feel it will improve the readability or structure of your code.
+
+### Regular Expression Object Methods
+
+
+A compiled regular expression object  `re_obj`  supports the following methods:
+
+-   `re_obj.search(<string>[, <pos>[, <endpos>]])`
+-   `re_obj.match(<string>[, <pos>[, <endpos>]])`
+-   `re_obj.fullmatch(<string>[, <pos>[, <endpos>]])`
+-   `re_obj.findall(<string>[, <pos>[, <endpos>]])`
+-   `re_obj.finditer(<string>[, <pos>[, <endpos>]])`
+
+These all behave the same way as the corresponding  `re`  functions that you’ve already encountered, with the exception that they also support the optional  `<pos>`  and  `<endpos>`  parameters. If these are present, then the search only applies to the portion of  `<string>`  indicated by  `<pos>`  and  `<endpos>`, which act the same way as indices in  [slice notation](https://realpython.com/python-strings/#string-slicing):
+
+```python
+ 1 >>> re_obj = re.compile(r'\d+')
+ 2 >>> s = 'foo123barbaz'
+ 3 
+ 4 >>> re_obj.search(s)
+ 5 <_sre.SRE_Match object; span=(3, 6), match='123'>
+ 6 
+ 7 >>> s[6:9]
+ 8 'bar'
+ 9 >>> print(re_obj.search(s, 6, 9))
+10None
+```
+In the above example, the regex is  `\d+`, a sequence of digit characters. The  `.search()`  call on  **line 4**  searches all of  `s`, so there’s a match. On  **line 9**, the  `<pos>`  and  `<endpos>`  parameters effectively restrict the search to the substring starting with character 6 and going up to but not including character 9 (the substring  `'bar'`), which doesn’t contain any digits.
+
+If you specify  `<pos>`  but omit  `<endpos>`, then the search applies to the substring from  `<pos>`  to the end of the string.
+
+Note that anchors such as caret (`^`) and dollar sign (`$`) still refer to the start and end of the entire string, not the substring determined by  `<pos>`  and  `<endpos>`:
+
+```python
+>>> re_obj = re.compile('^bar')
+>>> s = 'foobarbaz'
+
+>>> s[3:]
+'barbaz'
+
+>>> print(re_obj.search(s, 3))
+None
+```
+Here, even though  `'bar'`  does occur at the start of the substring beginning at character 3, it isn’t at the start of the entire string, so the caret (`^`) anchor fails to match.
+
+The following methods are available for a compiled regular expression object  `re_obj`  as well:
+
+-   `re_obj.split(<string>, maxsplit=0)`
+-   `re_obj.sub(<repl>, <string>, count=0)`
+-   `re_obj.subn(<repl>, <string>, count=0)`
+
+These also behave analogously to the corresponding  `re`  functions, but they don’t support the  `<pos>`  and  `<endpos>`  parameters.
+
+### Regular Expression Object Attributes
+
+
+The `re` module defines several useful attributes for a compiled regular expression object:
+
+
+|Attribute  |Meaning  |
+|--|--|
+|re_obj.flags  |Any `<flags>` that are in effect for the regex  |
+|re_obj.groups  |The number of capturing groups in the regex  |
+|re_obj.groupindex  |A dictionary mapping each symbolic group name defined by the `(?P<name>)` construct (if any) to the corresponding group number  |
+|re_obj.pattern  |The `<regex>` pattern that produced this object  |
+
+The code below demonstrates some uses of these attributes:
+
+```python
+ 1 >>> re_obj = re.compile(r'(?m)(\w+),(\w+)', re.I)
+ 2 >>> re_obj.flags 342
+ 4 >>> re.I|re.M|re.UNICODE
+ 5 <RegexFlag.UNICODE|MULTILINE|IGNORECASE: 42>
+ 6 >>> re_obj.groups 72
+ 8 >>> re_obj.pattern 9'(?m)(\\w+),(\\w+)'
+10 
+11 >>> re_obj = re.compile(r'(?P<w1>),(?P<w2>)')
+12 >>> re_obj.groupindex 13mappingproxy({'w1': 1, 'w2': 2})
+14 >>> re_obj.groupindex['w1']
+151
+16>>> re_obj.groupindex['w2']
+172
+```
+Note that  `.flags`  includes any flags specified as arguments to  `re.compile()`, any specified within the regex with the  `(?flags)`  metacharacter sequence, and any that are in effect by default. In the regular expression object defined on  **line 1**, there are three flags defined:
+
+1.  **`re.I`:**  Specified as a  `<flags>`  value in the  `re.compile()`  call
+2.  **`re.M`:**  Specified as  `(?m)`  within the regex
+3.  **`re.UNICODE`:**  Enabled by default
+
+You can see on  **line 4**  that the value of  `re_obj.flags`  is the  **logical OR**  of these three values, which equals  `42`.
+
+The value of the  `.groupindex`  attribute for the regular expression object defined on  **line 11**  is technically an object of type  `mappingproxy`. For practical purposes, it functions like a  [dictionary](dictionaries-python.md).
+
+## Match Object Methods and Attributes
+
+As you’ve seen, most functions and methods in the  `re`  module return a  **match object**  when there’s a successful match. Because a match object is  [truthy](https://realpython.com/python-data-types/#boolean-type-boolean-context-and-truthiness), you can use it in a conditional:
+
+```python
+>>> m = re.search('bar', 'foo.bar.baz')
+>>> m
+<_sre.SRE_Match object; span=(4, 7), match='bar'>
+>>> bool(m)
+True
+
+>>> if re.search('bar', 'foo.bar.baz'): ...     print('Found a match')
+...
+Found a match
+``` 
+
+But match objects also contain quite a bit of handy information about the match. You’ve already seen some of it—the  `span=`  and  `match=`  data that the interpreter shows when it displays a match object. You can obtain much more from a match object using its methods and attributes.
+
+### Match Object Methods
+
+The table below summarizes the methods that are available for a match object `match`:
+| Method             | Returns                                                         |
+|--------------------|-----------------------------------------------------------------|
+| match.group()      | The specified captured group or groups from match               |
+| match.__getitem__()| A captured group from match                                     |
+| match.groups()     | All the captured groups from match                              |
+| match.groupdict()  | A dictionary of named captured groups from match                |
+| match.expand()     | The result of performing backreference substitutions from match |
+| match.start()      | The starting index of match                                     |
+| match.end()        | The ending index of match                                       |
+| match.span()       | Both the starting and ending indices of match as a tuple        |
+
+The following sections describe these methods in more detail.
+
+`match.group([<group1>, ...])`
+
+> Returns the specified captured group(s) from a match.
+
+For numbered groups,  `match.group(n)`  returns the  `n``th`  group:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.group(1)
+'foo'
+>>> m.group(3)
+'baz'
+```
+**Remember:**  Numbered captured groups are one-based, not zero-based.
+
+If you capture groups using  `(?P<name><regex>)`, then  `match.group(<name>)`  returns the corresponding named group:
+
+```python
+>>> m = re.match(r'(?P<w1>\w+),(?P<w2>\w+),(?P<w3>\w+)', 'quux,corge,grault')
+>>> m.group('w1')
+'quux'
+>>> m.group('w3')
+'grault'
+```
+With more than one argument,  `.group()`  returns a tuple of all the groups specified. A given group can appear multiple times, and you can specify any captured groups in any order:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.group(1, 3)
+('foo', 'baz')
+>>> m.group(3, 3, 1, 1, 2, 2)
+('baz', 'baz', 'foo', 'foo', 'bar', 'bar')
+
+>>> m = re.match(r'(?P<w1>\w+),(?P<w2>\w+),(?P<w3>\w+)', 'quux,corge,grault')
+>>> m.group('w3', 'w1', 'w1', 'w2')
+('grault', 'quux', 'quux', 'corge')
+```
+If you specify a group that’s out of range or nonexistent, then  `.group()`  raises an  `IndexError`  exception:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.group(4)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+IndexError: no such group
+
+>>> m = re.match(r'(?P<w1>\w+),(?P<w2>\w+),(?P<w3>\w+)', 'quux,corge,grault')
+>>> m.group('foo')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+IndexError: no such group
+```
+It’s possible for a regex in Python to match as a whole but to contain a group that doesn’t participate in the match. In that case,  `.group()`  returns  `None`  for the nonparticipating group. Consider this example:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)?', 'foo,bar,')
+>>> m
+<_sre.SRE_Match object; span=(0, 8), match='foo,bar,'>
+>>> m.group(1, 2)
+('foo', 'bar')
+```
+This regex matches, as you can see from the match object. The first two captured groups contain  `'foo'`  and  `'bar'`, respectively.
+
+A question mark (`?`) quantifier metacharacter follows the third group, though, so that group is optional. A match will occur if there’s a third sequence of word characters following the second comma (`,`) but also if there isn’t.
+
+In this case, there isn’t. So there is match overall, but the third group doesn’t participate in it. As a result,  `m.group(3)`  is still defined and is a valid reference, but it returns  `None`:
+
+```python
+>>> print(m.group(3))
+None
+```
+It can also happen that a group participates in the overall match multiple times. If you call  `.group()`  for that group number, then it returns only the part of the search string that matched the last time. The earlier matches aren’t accessible:
+
+```python
+>>> m = re.match(r'(\w{3},)+', 'foo,bar,baz,qux')
+>>> m
+<_sre.SRE_Match object; span=(0, 12), match='foo,bar,baz,'>
+>>> m.group(1)
+'baz,'
+```
+In this example, the full match is  `'foo,bar,baz,'`, as shown by the displayed match object. Each of  `'foo,'`,  `'bar,'`, and  `'baz,'`  matches what’s inside the group, but  `m.group(1)`  returns only the last match,  `'baz,'`.
+
+If you call  `.group()`  with an argument of  `0`  or no argument at all, then it returns the entire match:
+
+```python
+ 1>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+ 2>>> m
+ 3<_sre.SRE_Match object; span=(0, 11), match='foo,bar,baz'> 4
+ 5>>> m.group(0)
+ 6'foo,bar,baz' 7>>> m.group()
+ 8'foo,bar,baz'
+```
+This is the same data the interpreter shows following  `match=`  when it displays the match object, as you can see on  **line 3**  above.
+
+`match.__getitem__(<grp>)`
+
+> Returns a captured group from a match.
+
+`match.__getitem__(<grp>)`  is identical to  `match.group(<grp>)`  and returns the single group specified by  `<grp>`:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.group(2)
+'bar'
+>>> m.__getitem__(2)
+'bar'
+```
+If  `.__getitem__()`  simply replicates the functionality of  `.group()`, then why would you use it? You probably wouldn’t directly, but you might indirectly. Read on to see why.
+
+### A Brief Introduction to Magic Methods
+
+
+`.__getitem__()`  is one of a collection of methods in Python called  [magic methods](python-classes.md/#special-methods-and-protocols). These are special methods that the interpreter calls when a Python statement contains specific corresponding syntactical elements.
+
+**Note:**  Magic methods are also referred to as  **dunder methods**  because of the  **d**ouble  **under**score at the beginning and end of the method name.
+
+Later in this series, there are several tutorials on object-oriented programming. You’ll learn much more about magic methods there.
+
+The particular syntax that  `.__getitem__()`  corresponds to is indexing with square brackets. For any object  `obj`, whenever you use the expression  `obj[n]`, behind the scenes Python quietly translates it to a call to  `.__getitem__()`. The following expressions are effectively equivalent:
+```python
+obj[n]
+obj.__getitem__(n)
+``` 
+
+The syntax  `obj[n]`  is only meaningful if a  `.__getitem()__`  method exists for the class or type to which  `obj`  belongs. Exactly how Python interprets  `obj[n]`  will then depend on the implementation of  `.__getitem__()`  for that class.
+
+### Back to Match Objects
+
+
+As of Python version 3.6, the  `re`  module does implement  `.__getitem__()`  for match objects. The implementation is such that  `match.__getitem__(n)`  is the same as  `match.group(n)`.
+
+The result of all this is that, instead of calling  `.group()`  directly, you can access captured groups from a match object using square-bracket indexing syntax instead:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.group(2)
+'bar'
+>>> m.__getitem__(2)
+'bar'
+>>> m[2] 'bar'
+```
+This works with named captured groups as well:
+
+```python
+>>> m = re.match(
+...     r'foo,(?P<w1>\w+),(?P<w2>\w+),qux',
+...     'foo,bar,baz,qux')
+>>> m.group('w2')
+'baz'
+>>> m['w2'] 'baz'
+```
+This is something you could achieve by just calling  `.group()`  explicitly, but it’s a pretty shortcut notation nonetheless.
+
+When a programming language provides alternate syntax that isn’t strictly necessary but allows for the expression of something in a cleaner, easier-to-read way, it’s called  [**syntactic sugar**](https://en.wikipedia.org/wiki/Syntactic_sugar). For a match object,  `match[n]`  is syntactic sugar for  `match.group(n)`.
+
+**Note:**  Many objects in Python have a  `.__getitem()__`  method defined, allowing the use of square-bracket indexing syntax. However, this feature is only available for regex match objects in Python version 3.6 or later.
+
+`match.groups(default=None)`
+
+> Returns all captured groups from a match.
+
+`match.groups()`  returns a tuple of all captured groups:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.groups()
+('foo', 'bar', 'baz')
+```
+As you saw previously, when a group in a regex in Python doesn’t participate in the overall match,  `.group()`  returns  `None`  for that group. By default,  `.groups()`  does likewise.
+
+If you want  `.groups()`  to return something else in this situation, then you can use the  `default`  keyword argument:
+
+```python
+ 1 >>> m = re.search(r'(\w+),(\w+),(\w+)?', 'foo,bar,')
+ 2 >>> m
+ 3 <_sre.SRE_Match object; span=(0, 8), match='foo,bar,'>
+ 4 >>> print(m.group(3))
+ 5 None
+ 6 
+ 7 >>> m.groups()
+ 8 ('foo', 'bar', None) 9>>> m.groups(default='---')
+10 ('foo', 'bar', '---')
+```
+Here, the third  `(\w+)`  group doesn’t participate in the match because the question mark (`?`) metacharacter makes it optional, and the string  `'foo,bar,'`  doesn’t contain a third sequence of word characters. By default,  `m.groups()`  returns  `None`  for the third group, as shown on  **line 8**. On  **line 10**, you can see that specifying  `default='---'`  causes it to return the string  `'---'`  instead.
+
+There isn’t any corresponding  `default`  keyword for  `.group()`. It always returns  `None`  for nonparticipating groups.
+
+`match.groupdict(default=None)`
+
+> Returns a dictionary of named captured groups.
+
+`match.groupdict()`  returns a dictionary of all named groups captured with the  `(?P<name><regex>)`  metacharacter sequence. The dictionary keys are the group names and the dictionary values are the corresponding group values:
+
+```python
+>>> m = re.match(
+...     r'foo,(?P<w1>\w+),(?P<w2>\w+),qux',
+...     'foo,bar,baz,qux')
+>>> m.groupdict()
+{'w1': 'bar', 'w2': 'baz'}
+>>> m.groupdict()['w2']
+'baz'
+```
+As with  `.groups()`, for  `.groupdict()`  the  `default`  argument determines the return value for nonparticipating groups:
+
+```python
+>>> m = re.match(
+...     r'foo,(?P<w1>\w+),(?P<w2>\w+)?,qux',
+...     'foo,bar,,qux')
+>>> m.groupdict()
+{'w1': 'bar', 'w2': None}
+>>> m.groupdict(default='---')
+{'w1': 'bar', 'w2': '---'}
+```
+Again, the final group  `(?P<w2>\w+)`  doesn’t participate in the overall match because of the question mark (`?`) metacharacter. By default,  `m.groupdict()`  returns  `None`  for this group, but you can change it with the  `default`  argument.
+
+`match.expand(<template>)`
+
+> Performs backreference substitutions from a match.
+
+`match.expand(<template>)`  returns the string that results from performing backreference substitution on  `<template>`  exactly as  `re.sub()`  would do:
+
+```python
+ 1 >>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+ 2 >>> m
+ 3 <_sre.SRE_Match object; span=(0, 11), match='foo,bar,baz'>
+ 4 >>> m.groups()
+ 5 ('foo', 'bar', 'baz')
+ 6 
+ 7 >>> m.expand(r'\2') 8'bar'
+ 9 >>> m.expand(r'[\3] -> [\1]') 10'[baz] -> [foo]'
+11 
+12 >>> m = re.search(r'(?P<num>\d+)', 'foo123qux')
+13 >>> m
+14 <_sre.SRE_Match object; span=(3, 6), match='123'>
+15 >>> m.group(1)
+16 '123'
+17 
+18 >>> m.expand(r'--- \g<num> ---') 19'--- 123 ---'
+```
+This works for numeric backreferences, as on  **lines 7 and 9**  above, and also for named backreferences, as on  **line 18**.
+
+`match.start([<grp>])`
+
+`match.end([<grp>])`
+
+> Return the starting and ending indices of the match.
+
+`match.start()`  returns the index in the search string where the match begins, and  `match.end()`  returns the index immediately after where the match ends:
+
+```python
+ 1 >>> s = 'foo123bar456baz'
+ 2 >>> m = re.search('\d+', s)
+ 3 >>> m
+ 4 <_sre.SRE_Match object; span=(3, 6), match='123'> 5>>> m.start()
+ 6 3 7>>> m.end()
+ 8 6
+```
+When Python displays a match object, these are the values listed with the  `span=`  keyword, as shown on  **line 4**  above. They behave like  [string-slicing](strings-and-character-data-in-python.md/#string-slicing)  values, so if you use them to slice the original search string, then you should get the matching substring:
+
+```python
+>>> m
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> s[m.start():m.end()]
+'123'
+```
+`match.start(<grp>)`  and  `match.end(<grp>)`  return the starting and ending indices of the substring matched by  `<grp>`, which may be a numbered or named group:
+
+```python
+>>> s = 'foo123bar456baz'
+>>> m = re.search(r'(\d+)\D*(?P<num>\d+)', s)
+
+>>> m.group(1)
+'123'
+>>> m.start(1), m.end(1)
+(3, 6)
+>>> s[m.start(1):m.end(1)]
+'123'
+
+>>> m.group('num')
+'456'
+>>> m.start('num'), m.end('num')
+(9, 12)
+>>> s[m.start('num'):m.end('num')]
+'456'
+```
+If the specified group matches a null string, then  `.start()`  and  `.end()`  are equal:
+
+```python
+>>> m = re.search('foo(\d*)bar', 'foobar')
+>>> m[1]
+''
+>>> m.start(1), m.end(1)
+(3, 3)
+```
+This makes sense if you remember that  `.start()`  and  `.end()`  act like slicing indices. Any string slice where the beginning and ending indices are equal will always be an empty string.
+
+A special case occurs when the regex contains a group that doesn’t participate in the match:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)?', 'foo,bar,')
+>>> print(m.group(3))
+None
+>>> m.start(3), m.end(3)
+(-1, -1)
+```
+As you’ve seen previously, in this case the third group doesn’t participate.  `m.start(3)`  and  `m.end(3)`  aren’t really meaningful here, so they return  `-1`.
+
+`match.span([<grp>])`
+
+> Returns both the starting and ending indices of the match.
+
+`match.span()`  returns both the starting and ending indices of the match as a tuple. If you specified  `<grp>`, then the return tuple applies to the given group:
+
+```python
+>>> s = 'foo123bar456baz'
+>>> m = re.search(r'(\d+)\D*(?P<num>\d+)', s)
+>>> m
+<_sre.SRE_Match object; span=(3, 12), match='123bar456'>
+
+>>> m[0]
+'123bar456'
+>>> m.span() (3, 12)
+
+>>> m[1]
+'123'
+>>> m.span(1) (3, 6)
+
+>>> m['num']
+'456'
+>>> m.span('num') (9, 12)
+```
+The following are effectively equivalent:
+
+-   `match.span(<grp>)`
+-   `(match.start(<grp>), match.end(<grp>))`
+
+`match.span()`  just provides a convenient way to obtain both  `match.start()`  and  `match.end()`  in one method call.
+
+### Match Object Attributes
+
+Like a compiled regular expression object, a match object also has several useful attributes available:
+
+| Attribute         | Meaning                                                                |
+|-------------------|------------------------------------------------------------------------|
+| match.pos         | The effective values of the <pos> and <endpos> arguments for the match |
+| match.endpos      | The effective values of the <pos> and <endpos> arguments for the match |
+| match.lastindex   | The index of the last captured group                                   |
+| match.lastgroup   | The name of the last captured group                                    |
+| match.re          | The compiled regular expression object for the match                   |
+| match.string      | The search string for the match                                        |
+
+The following sections provide more detail on these match object attributes.
+
+`match.pos`
+
+`match.endpos`
+
+> Contain the effective values of  `<pos>`  and  `<endpos>`  for the search.
+
+Remember that some methods, when invoked on a compiled regex, accept optional  `<pos>`  and  `<endpos>`  arguments that limit the search to a portion of the specified search string. These values are accessible from the match object with the  `.pos`  and  `.endpos`  attributes:
+
+```python
+>>> re_obj = re.compile(r'\d+')
+>>> m = re_obj.search('foo123bar', 2, 7)
+>>> m
+<_sre.SRE_Match object; span=(3, 6), match='123'>
+>>> m.pos, m.endpos
+(2, 7)
+```
+If the  `<pos>`  and  `<endpos>`  arguments aren’t included in the call, either because they were omitted or because the function in question doesn’t accept them, then the  `.pos`  and  `.endpos`  attributes effectively indicate the start and end of the string:
+
+```python
+ 1 >>> re_obj = re.compile(r'\d+')
+ 2 >>> m = re_obj.search('foo123bar') 3>>> m
+ 4 <_sre.SRE_Match object; span=(3, 6), match='123'>
+ 5 >>> m.pos, m.endpos
+ 6 (0, 9)
+ 7 
+ 8 >>> m = re.search(r'\d+', 'foo123bar') 9>>> m
+10 <_sre.SRE_Match object; span=(3, 6), match='123'>
+11 >>> m.pos, m.endpos
+12 (0, 9)
+```
+The  `re_obj.search()`  call above on  **line 2**  could take  `<pos>`  and  `<endpos>`  arguments, but they aren’t specified. The  `re.search()`  call on  **line 8**  can’t take them at all. In either case,  `m.pos`  and  `m.endpos`  are  `0`  and  `9`, the starting and ending indices of the search string  `'foo123bar'`.
+
+`match.lastindex`
+
+> Contains the index of the last captured group.
+
+`match.lastindex`  is equal to the integer index of the last captured group:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.lastindex
+3
+>>> m[m.lastindex]
+'baz'
+```
+In cases where the regex contains potentially nonparticipating groups, this allows you to determine how many groups actually participated in the match:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)?', 'foo,bar,baz') >>> m.groups()
+('foo', 'bar', 'baz')
+>>> m.lastindex, m[m.lastindex]
+(3, 'baz')
+
+>>> m = re.search(r'(\w+),(\w+),(\w+)?', 'foo,bar,') >>> m.groups()
+('foo', 'bar', None)
+>>> m.lastindex, m[m.lastindex]
+(2, 'bar')
+```
+In the first example, the third group, which is optional because of the question mark (`?`) metacharacter, does participate in the match. But in the second example it doesn’t. You can tell because  `m.lastindex`  is  `3`  in the first case and  `2`  in the second.
+
+There’s a subtle point to be aware of regarding  `.lastindex`. It isn’t always the case that the last group to match is also the last group encountered syntactically. The  [Python documentation](https://docs.python.org/3/library/re.html#re.Match.lastindex)  gives this example:
+
+```python
+>>> m = re.match('((a)(b))', 'ab')
+>>> m.groups()
+('ab', 'a', 'b')
+>>> m.lastindex
+1
+>>> m[m.lastindex]
+'ab'
+```
+The outermost group is  `((a)(b))`, which matches  `'ab'`. This is the first group the parser encounters, so it becomes group 1. But it’s also the last group to match, which is why  `m.lastindex`  is  `1`.
+
+The second and third groups the parser recognizes are  `(a)`  and  `(b)`. These are groups  `2`  and  `3`, but they match before group  `1`  does.
+
+`match.lastgroup`
+
+> Contains the name of the last captured group.
+
+If the last captured group originates from the  `(?P<name><regex>)`  metacharacter sequence, then  `match.lastgroup`  returns the name of that group:
+
+```python
+>>> s = 'foo123bar456baz'
+>>> m = re.search(r'(?P<n1>\d+)\D*(?P<n2>\d+)', s)
+>>> m.lastgroup
+'n2'
+```
+`match.lastgroup`  returns  `None`  if the last captured group isn’t a named group:
+
+```python
+>>> s = 'foo123bar456baz'
+
+>>> m = re.search(r'(\d+)\D*(\d+)', s)
+>>> m.groups()
+('123', '456')
+>>> print(m.lastgroup)
+None
+
+>>> m = re.search(r'\d+\D*\d+', s)
+>>> m.groups()
+()
+>>> print(m.lastgroup)
+None
+```
+As shown above, this can be either because the last captured group isn’t a named group or because there were no captured groups at all.
+
+`match.re`
+
+> Contains the regular expression object for the match.
+
+`match.re`  contains the regular expression object that produced the match. This is the same object you’d get if you passed the regex to  `re.compile()`:
+
+```python
+ 1 >>> regex = r'(\w+),(\w+),(\w+)'
+ 2 
+ 3 >>> m1 = re.search(regex, 'foo,bar,baz')
+ 4 >>> m1
+ 5 <_sre.SRE_Match object; span=(0, 11), match='foo,bar,baz'>
+ 6 >>> m1.re
+ 7 re.compile('(\\w+),(\\w+),(\\w+)')
+ 8 
+ 9 >>> re_obj = re.compile(regex)
+10 >>> re_obj
+11 re.compile('(\\w+),(\\w+),(\\w+)')
+12 >>> re_obj is m1.re 13True
+14 
+15 >>> m2 = re_obj.search('qux,quux,corge')
+16 >>> m2
+17 <_sre.SRE_Match object; span=(0, 14), match='qux,quux,corge'>
+18 >>> m2.re
+19 re.compile('(\\w+),(\\w+),(\\w+)')
+20 >>> m2.re is re_obj is m1.re 21True
+```
+Remember from earlier that the  `re`  module caches regular expressions after it compiles them, so they don’t need to be recompiled if used again. For that reason, as the identity comparisons on  **lines 12 and 20**  show, all the various regular expression objects in the above example are the exact same object.
+
+Once you have access to the regular expression object for the match, all of that object’s attributes are available as well:
+
+```python
+>>> m1.re.groups
+3
+>>> m1.re.pattern
+'(\\w+),(\\w+),(\\w+)'
+>>> m1.re.pattern == regex
+True
+>>> m1.re.flags
+32
+```
+You can also invoke any of the  [methods defined for a compiled regular expression object](regular-expressions.md/#regular-expression-object-methods)  on it:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.re
+re.compile('(\\w+),(\\w+),(\\w+)')
+
+>>> m.re.match('quux,corge,grault')
+<_sre.SRE_Match object; span=(0, 17), match='quux,corge,grault'>
+```
+Here,  `.match()`  is invoked on  `m.re`  to perform another search using the same regex but on a different search string.
+
+`match.string`
+
+> Contains the search string for a match.
+
+`match.string`  contains the search string that is the target of the match:
+
+```python
+>>> m = re.search(r'(\w+),(\w+),(\w+)', 'foo,bar,baz')
+>>> m.string
+'foo,bar,baz'
+
+>>> re_obj = re.compile(r'(\w+),(\w+),(\w+)')
+>>> m = re_obj.search('foo,bar,baz')
+>>> m.string
+'foo,bar,baz'
+```
+As you can see from the example, the  `.string`  attribute is available when the match object derives from a compiled regular expression object as well.
+
 # Reference
 [Regular Expressions: Regexes in Python (Part 1)](https://realpython.com/regex-python/)
 
