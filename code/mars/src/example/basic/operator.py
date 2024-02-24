@@ -1,5 +1,5 @@
 from math import isclose
-from src.base_class import BaseClass as Base # Import the BaseClass from the base_class module
+from src.example.oo.inheritance.base_class import BaseClass as Base # Import the BaseClass from the base_class module
 
 class Operator(Base):
   def __init__(self):

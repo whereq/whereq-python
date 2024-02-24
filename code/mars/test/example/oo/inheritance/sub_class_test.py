@@ -1,5 +1,5 @@
 import unittest
-from src import sub_class as sub  
+from example.oo.inheritance import sub_class as sub  
 
 class SubClassTest(unittest.TestCase):
   def setUp(self):

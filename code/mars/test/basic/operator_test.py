@@ -1,4 +1,5 @@
 import unittest
+
 from src.example.basic.operator import Operator # Import the Operator class from the operator module
 
 class OperatorTest(unittest.TestCase):
