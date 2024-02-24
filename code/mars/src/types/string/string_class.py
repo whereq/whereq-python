@@ -1,4 +1,4 @@
-from example.oo.inheritance import base_class
+from src.example.oo.inheritance import base_class
 
 class StringClass(base_class.BaseClass):
   @staticmethod

@@ -1,14 +1,9 @@
 ## .\.venv\Scripts\python.exe -m unittest test.BuiltInDataTypesTest
 
-import unittest
-import example.oo.inheritance.base_class as base 
+import src.example.oo.inheritance.base_class as base 
 
-class BaseClassTest(unittest.TestCase):
-  def setUp(self):
-    self.my_instance = base.BaseClass()
-
-  def test_instanceMethod(self):
-    self.my_instance.instance_method()
-
-if __name__ == '__main__':
-  unittest.main()
+def test_base_class():
+  base_instance = base.BaseClass()
+  assert base_instance.instance_method() == None
+  assert base_instance.class_method() == None
+  assert base_instance.static_method() == None

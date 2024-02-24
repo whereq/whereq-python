@@ -1,12 +1,4 @@
-import unittest
-from example.oo.inheritance import sub_class as sub  
+from src.example.oo.inheritance import sub_class as sub  
 
-class SubClassTest(unittest.TestCase):
-  def setUp(self):
-    self.obj = sub.SubClass()
-
-  def test_static_method(self):
-    sub.SubClass.static_method()
-
-if __name__ == '__main__':
-  unittest.main()
+def test_static_method():
+  assert sub.SubClass.static_method() == None
