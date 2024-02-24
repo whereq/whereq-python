@@ -26,7 +26,7 @@ search(...)
 ```
 
 ### Pattern Matching
-A match object is [**truthy**](python-data-types.md/#boolean-type-boolean-context-and-truthiness), so you can use it in a [Boolean context](python-boolean.md) like a conditional statement:
+A match object is [**truthy**](python-data-types.md/#boolean-type-boolean-context-and-truthiness), so it can be used in a [Boolean context](python-boolean.md) like a conditional statement:
 ```python
 >>> if re.search('123', s):
 ...     print('Found a match.')
